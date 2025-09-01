@@ -298,15 +298,24 @@
             }
             .container {
                 padding: 15px;
-                max-width: 100vw;
+                max-width: 98vw;
                 max-height: 100vh;
+                margin-top: -30px;     /* Move container higher */
+                transform: translateY(-20px);
             }
+            .high-scores {
+            max-width: 60vw;
+            width: 50vw;
+    }
             .games-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
+                max-width: 100%;
             }
             .game-card {
                 padding: 20px;
+                margin: 0 5px; 
+                
             }
         }
     
@@ -524,7 +533,7 @@
             else if (type === 'dodge') initDodge();
         }
 
-        function backToMenu() {
+            function backToMenu() {
     // Stop current game
     if (game) game.running = false;
     if (animationFrameId) {
@@ -532,6 +541,7 @@
         animationFrameId = null;
     }
     game = null;
+    
 
     // Reset all scores
     document.getElementById('snake-score').textContent = '0';
@@ -553,35 +563,52 @@
     keys = {};
     hideGameOver();
 }
+       function restartGame(type) {
+    if (game) game.running = false;
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    game = null;
+    
+    // reset score displays
+    if (type === 'snake') document.getElementById('snake-score').textContent = 0;
+    if (type === 'tetris') document.getElementById('tetris-score').textContent = 0;
+    if (type === 'breakout') {
+        // ✅ COMPLETE CLEAN SLATE RESTART FOR BREAKOUT
+        document.getElementById('breakout-score').textContent = 0;
+        document.getElementById('breakout-lives').textContent = 1;
+        hideGameOver();
+        
+        // Clear any existing canvas content
+        const canvas = document.getElementById('breakout-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Reset keys and any lingering state
+        keys = {};
+        
+        // Fresh initialization - equivalent to back + breakout again
+        setTimeout(() => {
+            initBreakout();
+        }, 100);  // Small delay ensures clean reset
+        return;
+    }
+    if (type === 'pong') {
+        document.getElementById('p1-score').textContent = 0;
+        document.getElementById('p2-score').textContent = 0;
+    }
+    if (type === 'racer') {
+        document.getElementById('racer-score').textContent = 0;
+        document.getElementById('racer-speed').textContent = 1;
+    }
+    if (type === 'dodge') document.getElementById('dodge-score').textContent = 0;
 
-        function restartGame(type) {
-            if (game) game.running = false;
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-            game = null;
-            
-            // reset score display
-            if (type === 'snake') document.getElementById('snake-score').textContent = 0;
-            if (type === 'tetris') document.getElementById('tetris-score').textContent = 0;
-            if (type === 'breakout') {
-                document.getElementById('breakout-score').textContent = 0;
-                document.getElementById('breakout-lives').textContent = 1;
-            }
-            if (type === 'pong') {
-                document.getElementById('p1-score').textContent = 0;
-                document.getElementById('p2-score').textContent = 0;
-            }
-            if (type === 'racer') {
-                document.getElementById('racer-score').textContent = 0;
-                document.getElementById('racer-speed').textContent = 1;
-            }
-            if (type === 'dodge') document.getElementById('dodge-score').textContent = 0;
+    hideGameOver();
+    setTimeout(() => startGame(type), 50);
+}
 
-            hideGameOver();
-            setTimeout(() => startGame(type), 50);
-        }
+
 
         function showGameOver(title, score) {
             document.getElementById('game-over-title').textContent = title;
