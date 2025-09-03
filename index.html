@@ -241,6 +241,10 @@
             gap: 40px;
             touch-action: manipulation;
         }
+        #racer-canvas {
+        width: calc(40vw - 35px);
+        height: calc(76vh - 35px);     /* Wide rectangle */
+    }
 
         .wide-btn {
             background: rgba(46, 204, 113, 0.3);
@@ -262,8 +266,54 @@
             transform: scale(0.95);
             border-color: rgba(46, 204, 113, 0.8);
         }
+        /* Controls row: Score | D-pad | Restart */
+.dodge-controls-row {
+    display: flex;
+    align-items: center;             /* Vertically center all items */
+    justify-content: space-between;   /* Score left, D-pad center, Restart right */
+    gap: 2px;                        /* Space between elements */
+}
+/* D-pad container */
+#dodge-touch-controls {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+}
 
-        @media (max-width: 768px) {
+/* D-pad rows */
+#dodge-touch-controls .tc-row {
+    display: flex;
+    justify-content: center;
+    gap: 5px;                        /* Space between buttons */
+}
+#dodge-touch-controls .tc-row:first-child {
+    margin-bottom: 6px;  /* Adjust padding as needed */
+}
+
+/* Buttons */
+.tc-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(255,255,255,0.5); /* Translucent white */
+    color: #000;
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    user-select: none;
+    touch-action: none;
+    cursor: pointer;
+}
+
+.tc-btn:active {
+    background-color: rgba(255,255,255,0.8);
+}
+
+@media (max-width: 768px) {
+  
             .mobile-controls { display: grid; }
             .two-btn-controls { display: flex; }
             
@@ -297,6 +347,10 @@
         padding: 0;             /* Remove body padding */
         margin: 0;              /* Remove body margins */
     }
+    #dodge-canvas {
+        width: 92vw;   /* 90% of viewport width */
+        height: auto;  /* keep aspect ratio */
+    }
             .high-scores {
             max-width: 70vw;
             width: 55vw;
@@ -321,8 +375,8 @@
     }
     
     #racer-canvas {
-        width: calc(86vw - 25px);
-        height: calc(84vh - 55px);     /* Wide rectangle */
+        width: calc(94vw - 25px);
+        height: calc(82vh - 35px);     /* Wide rectangle */
     }
         }
     
@@ -371,15 +425,15 @@
 <!-- Game Selector -->
 <div class="game-selector" id="selector">
 <div class="games-grid">
-<div class="game-card" onclick="startGame('snake')">
-<div class="game-icon">🐍</div>
-<div class="game-title">Snake</div>
-<div class="game-desc">Eat and Grow</div>
+    <div class="game-card" onclick="startGame('racer')">
+<div class="game-icon">🏎️</div>
+<div class="game-title">Race Car</div>
+<div class="game-desc">Zip Through</div>
 </div>
-<div class="game-card" onclick="startGame('tetris')">
-<div class="game-icon">🧩</div>
-<div class="game-title">Tetris</div>
-<div class="game-desc">Clear Stack</div>
+<div class="game-card" onclick="startGame('dodge')">
+<div class="game-icon">⚡</div>
+<div class="game-title">Dodge</div>
+<div class="game-desc">Avoid Shapes</div>
 </div>
 <div class="game-card" onclick="startGame('breakout')">
 <div class="game-icon">🧱</div>
@@ -391,15 +445,15 @@
 <div class="game-title">Pong</div>
 <div class="game-desc">Classic Paddle</div>
 </div>
-<div class="game-card" onclick="startGame('racer')">
-<div class="game-icon">🏎️</div>
-<div class="game-title">Racer</div>
-<div class="game-desc">Zip Through</div>
+<div class="game-card" onclick="startGame('snake')">
+<div class="game-icon">🐍</div>
+<div class="game-title">Snake</div>
+<div class="game-desc">Eat and Grow</div>
 </div>
-<div class="game-card" onclick="startGame('dodge')">
-<div class="game-icon">⚡</div>
-<div class="game-title">Dodge</div>
-<div class="game-desc">Avoid Shapes</div>
+<div class="game-card" onclick="startGame('tetris')">
+<div class="game-icon">🧩</div>
+<div class="game-title">Tetris</div>
+<div class="game-desc">Clear Stack</div>
 </div>
 </div>
 </div>
@@ -447,13 +501,17 @@
 </div>
 <canvas height="400" id="pong-canvas" width="600"></canvas>
 <div class="controls">
-<div class="score">P1: <span id="p1-score">0</span> | P2: <span id="p2-score">0</span></div>
-<button class="restart-btn" onclick="restartGame('pong')">Restart</button>
+  <div class="score">
+    <span id="p1-label">You</span>: <span id="p1-score">0</span> | 
+    <span id="p2-label">AI</span>: <span id="p2-score">0</span>
+  </div>
+  <button class="restart-btn" onclick="restartGame('pong')">Restart</button>
 </div>
+
 </div>
 <div class="game-screen" id="racer-game">
 <div class="game-header">
-<div class="game-name">🏎️ Racer</div>
+<div class="game-name">🏎️ Race Car</div>
 <button class="back-btn" onclick="backToMenu()">← Back</button>
 </div>
 <canvas height="600" id="racer-canvas" width="400"></canvas>
@@ -463,15 +521,31 @@
 </div>
 </div>
 <div class="game-screen" id="dodge-game">
-<div class="game-header">
-<div class="game-name">⚡ Dodge</div>
-<button class="back-btn" onclick="backToMenu()">← Back</button>
-</div>
-<canvas height="500" id="dodge-canvas" width="500"></canvas>
+  <div class="game-header">
+    <div class="game-name">⚡ Dodge</div>
+    <button class="back-btn" onclick="backToMenu()">← Back</button>
+  </div>
+
+  <canvas height="500" id="dodge-canvas" width="500"></canvas>
+
+  <!-- Controls row: Score | D-pad | Restart -->
 <div class="controls">
-<div class="score">Score: <span id="dodge-score">0</span></div>
-<button class="restart-btn" onclick="restartGame('dodge')">Restart</button>
+    <div class="score">Score: <span id="dodge-score">0</span></div>
+    <div id="dodge-touch-controls" class="touch-controls">
+        <div class="tc-row">
+            <button id="dodge-up" class="tc-btn" data-key="ArrowUp">▲</button>
+        </div>
+        <div class="tc-row">
+            <button id="dodge-left" class="tc-btn" data-key="ArrowLeft">◀</button>
+            <button id="dodge-down" class="tc-btn" data-key="ArrowDown">▼</button>
+            <button id="dodge-right" class="tc-btn" data-key="ArrowRight">▶</button>
+        </div>
+    </div>
+    <button class="restart-btn" onclick="restartGame('dodge')">Restart</button>
 </div>
+</div>
+
+
 </div>
 <div class="game-over" id="game-over">
 <div id="game-over-title">Game Over!</div>
@@ -487,27 +561,78 @@
 <div class="info-text" id="infoText">App Developed by Siddhest Roy</div>
 <button class="hs-btn" onclick="showHighScores()">HS</button>
 </div>
+</div>
+
+
+
 <script>
         let game = null;
-        let keys = {};
-        let touchMoving = false;
-        let animationFrameId = null;
+let keys = {};
+let touchMoving = false;
+let animationFrameId = null;
 
-        // High Score System - Using in-memory storage
-        let highScores = {
-            snake: 0, tetris: 0, breakout: 0, 
-            pong: 0, racer: 0, dodge: 0
-        };
-        
-        function saveHighScore(gameType, score) {
-            if (score > highScores[gameType]) {
-                highScores[gameType] = score;
-                return true; // New high score
-            }
-            return false;
+// High Score System - Using in-memory storage
+let highScores = {
+    snake: 0, tetris: 0, breakout: 0, 
+    pong: 0, racer: 0, dodge: 0
+};
+
+// Single set of keyboard event listeners for all games
+// ✅ Unified keyboard handler for all games
+document.addEventListener('keydown', e => {
+    // Prevent double-move when key is held
+    if (e.repeat) return;
+
+    // Snake controls
+    if (gameType === 'snake' && game && game.running) {
+        if (['ArrowUp','w','W'].includes(e.key)) snakeDir('up');
+        if (['ArrowDown','s','S'].includes(e.key)) snakeDir('down');
+        if (['ArrowLeft','a','A'].includes(e.key)) snakeDir('left');
+        if (['ArrowRight','d','D'].includes(e.key)) snakeDir('right');
+    }
+
+    // Tetris controls
+    if (gameType === 'tetris' && game && game.running) {
+        if (['ArrowLeft','a','A'].includes(e.key)) tetrisMove('left');
+        if (['ArrowRight','d','D'].includes(e.key)) tetrisMove('right');
+        if (['ArrowDown','s','S'].includes(e.key)) tetrisDrop();
+        if (['ArrowUp','w','W'].includes(e.key)) tetrisRotate();
+        if (e.code === 'Space') tetrisDrop(); // optional hard drop
+    }
+
+    // Breakout controls
+    if (gameType === 'breakout' && game && !game.launched) {
+        if ([' ','Spacebar','ArrowUp'].includes(e.key)) {
+            game.launched = true;
         }
-        
-        function showHighScores() {
+    }
+
+    // Pong controls
+    if (gameType === 'pong' && game && !game.started) {
+        if (['ArrowUp','ArrowDown','w','W','s','S',' '].includes(e.key)) {
+            game.started = true;
+        }
+    }
+
+    // Track key state globally
+    keys[e.key] = true;
+});
+
+document.addEventListener('keyup', e => {
+    keys[e.key] = false;
+});
+
+
+
+function saveHighScore(gameType, score) {
+    if (score > highScores[gameType]) {
+        highScores[gameType] = score;
+        return true; // New high score
+    }
+    return false;
+}
+
+function showHighScores() {
     const content = `
         <div style="font-size: 12px; opacity: 0.7; margin: 5px 0 15px 0;">(resets after refresh)</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
@@ -515,118 +640,195 @@
             <div>🧩 Tetris: ${highScores.tetris}</div>
             <div>🧱 Breakout: ${highScores.breakout}</div>
             <div>🏓 Pong: ${highScores.pong} wins</div>
-            <div>🏎️ Racer: ${highScores.racer}</div>
+            <div>🏎️ Race Car: ${highScores.racer}</div>
             <div>⚡ Dodge: ${highScores.dodge}</div>
         </div>
     `;
     document.getElementById('high-scores-content').innerHTML = content;
     document.getElementById('high-scores').style.display = 'block';
 }
+
+function hideHighScores() {
+    document.getElementById('high-scores').style.display = 'none';
+}
+
+let gameType = null;
+let dodgeControlsSetup = false;
+
+// Show or hide the Dodge touch buttons
+function showDodgeControls(show) {
+    const panel = document.getElementById('dodge-touch-controls');
+    if (panel) {
+        panel.style.display = show ? 'flex' : 'none';
+    }
+}
+
+// Setup touch controls for Dodge game - unified approach
+function setupDodgeTouchControls() {
+    if (dodgeControlsSetup) return; // Prevent duplicate setup
+    
+    const buttons = document.querySelectorAll('.tc-btn');
+    
+    buttons.forEach(btn => {
+        const key = btn.dataset.key; // Should be 'ArrowUp', 'ArrowDown', etc.
         
-        function hideHighScores() {
-            document.getElementById('high-scores').style.display = 'none';
-        }
+        // Press handlers
+        const handlePress = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            keys[key] = true;
+        };
+        
+        // Release handlers
+        const handleRelease = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            keys[key] = false;
+        };
+        
+        // Touch events
+        btn.addEventListener('touchstart', handlePress, { passive: false });
+        btn.addEventListener('touchend', handleRelease, { passive: false });
+        btn.addEventListener('touchcancel', handleRelease, { passive: false });
+        
+        // Mouse events (for desktop testing)
+        btn.addEventListener('mousedown', handlePress);
+        btn.addEventListener('mouseup', handleRelease);
+        btn.addEventListener('mouseleave', handleRelease);
+        
+        // Prevent context menu on long press
+        btn.addEventListener('contextmenu', (e) => e.preventDefault());
+    });
+    
+    dodgeControlsSetup = true;
+}
 
-        let gameType = null;
+function startGame(type) {
+    gameType = type; // ✅ moved here so loops see it immediately
 
-        function startGame(type) {
-            gameType = type;
-            document.getElementById('selector').classList.add('hidden');
-            document.getElementById(type + '-game').classList.add('active');
-            
-            if (type === 'snake') initSnake();
-            else if (type === 'tetris') initTetris();
-            else if (type === 'breakout') initBreakout();
-            else if (type === 'pong') initPong();
-            else if (type === 'racer') initRacer();
-            else if (type === 'dodge') initDodge();
-        }
+    // Hide menu, show game screen
+    document.getElementById('selector').classList.add('hidden');
+    document.querySelectorAll('.game-screen').forEach(screen => screen.classList.remove('active'));
+    document.getElementById(type + '-game').classList.add('active');
 
-            function backToMenu() {
-    // Stop current game
-    if (game) game.running = false;
-    if (animationFrameId) {
+    // Initialize the specific game
+    switch(type) {
+        case 'snake': initSnake(); break;
+        case 'tetris': initTetris(); break;
+        case 'breakout': initBreakout(); break;
+        case 'pong': initPong(); break;
+        case 'racer': initRacer(); break;
+        case 'dodge': 
+            initDodge(); 
+            showDodgeControls(true);
+            setupDodgeTouchControls();
+            break;
+    }
+}
+
+
+function stopGameLoop() {
+    if(animationFrameId) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
     }
-    game = null;
-    
+}
 
-    // Reset all scores
+function resetKeys() {
+    keys = {
+        'ArrowUp': false,
+        'ArrowDown': false,
+        'ArrowLeft': false,
+        'ArrowRight': false
+    };
+}
+
+function backToMenu() {
+    // Stop game
+    if (game) game.running = false;
+    stopGameLoop();
+    game = null;
+    gameType = null;
+
+    // Reset scores
     document.getElementById('snake-score').textContent = '0';
     document.getElementById('tetris-score').textContent = '0';
     document.getElementById('breakout-score').textContent = '0';
     document.getElementById('p1-score').textContent = '0';
     document.getElementById('p2-score').textContent = '0';
     document.getElementById('racer-score').textContent = '0';
-    document.getElementById('racer-speed').textContent = '1';
+    document.getElementById('racer-speed').textContent = '60';
     document.getElementById('dodge-score').textContent = '0';
 
-    // Hide all game screens and show selector
-    document.querySelectorAll('.game-screen').forEach(screen => {
-        screen.classList.remove('active');
-    });
+    // Hide all game screens, show menu
+    document.querySelectorAll('.game-screen').forEach(screen => screen.classList.remove('active'));
     document.getElementById('selector').classList.remove('hidden');
-    
-    // Reset any game state
+
+    // Reset input and Dodge movement
     keys = {};
+    if (gameType === 'dodge') {
+        if (game) {
+            game.dodgeMoveX = 0;
+            game.dodgeMoveY = 0;
+        }
+        showDodgeControls(false);
+    }
+
     hideGameOver();
 }
-       function restartGame(type) {
+
+function restartGame(type) {
+    // Stop current game
     if (game) game.running = false;
-    if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-    }
+    stopGameLoop();
     game = null;
-    
-    // reset score displays
-    if (type === 'snake') document.getElementById('snake-score').textContent = 0;
-    if (type === 'tetris') document.getElementById('tetris-score').textContent = 0;
+
+    // Reset keys
+    resetKeys();
+
+    // Reset scores per game
+    if (type === 'snake') document.getElementById('snake-score').textContent = '0';
+    if (type === 'tetris') document.getElementById('tetris-score').textContent = '0';
     if (type === 'breakout') {
-        // ✅ COMPLETE CLEAN SLATE RESTART FOR BREAKOUT
-        document.getElementById('breakout-score').textContent = 0;
+        document.getElementById('breakout-score').textContent = '0';
         hideGameOver();
-        
-        // Clear any existing canvas content
+
+        // Clear canvas
         const canvas = document.getElementById('breakout-canvas');
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Reset keys and any lingering state
-        keys = {};
-        
-        // Fresh initialization - equivalent to back + breakout again
-        setTimeout(() => {
-            initBreakout();
-        }, 100);  // Small delay ensures clean reset
+
+        setTimeout(() => initBreakout(), 100);
         return;
     }
     if (type === 'pong') {
-        document.getElementById('p1-score').textContent = 0;
-        document.getElementById('p2-score').textContent = 0;
+        document.getElementById('p1-score').textContent = '0';
+        document.getElementById('p2-score').textContent = '0';
     }
     if (type === 'racer') {
-        document.getElementById('racer-score').textContent = 0;
-        document.getElementById('racer-speed').textContent = 1;
+        document.getElementById('racer-score').textContent = '0';
+        document.getElementById('racer-speed').textContent = '60';
     }
-    if (type === 'dodge') document.getElementById('dodge-score').textContent = 0;
+    if (type === 'dodge') {
+        document.getElementById('dodge-score').textContent = '0';
+        // Keep touch controls visible for dodge game
+        showDodgeControls(true);
+        setupDodgeTouchControls();
+    }
 
     hideGameOver();
     setTimeout(() => startGame(type), 50);
 }
 
+function showGameOver(title, score) {
+    document.getElementById('game-over-title').textContent = title;
+    document.getElementById('game-over-score').textContent = score;
+    document.getElementById('game-over').style.display = 'block';
+}
 
-
-        function showGameOver(title, score) {
-            document.getElementById('game-over-title').textContent = title;
-            document.getElementById('game-over-score').textContent = score;
-            document.getElementById('game-over').style.display = 'block';
-        }
-
-        function hideGameOver() {
-            document.getElementById('game-over').style.display = 'none';
-        }
+function hideGameOver() {
+    document.getElementById('game-over').style.display = 'none';
+}
 
         // Snake Game - Modified for smoother movement and color changes
         function initSnake() {
@@ -710,14 +912,13 @@
         }
 
         function snakeDir(dir) {
-            if (!game || !game.running) return;
-            switch(dir) {
-                case 'up': if (game.dy !== 1) { game.dx = 0; game.dy = -1; } break;
-                case 'down': if (game.dy !== -1) { game.dx = 0; game.dy = 1; } break;
-                case 'left': if (game.dx !== 1) { game.dx = -1; game.dy = 0; } break;
-                case 'right': if (game.dx !== -1) { game.dx = 1; game.dy = 0; } break;
-            }
-        }
+    if (!game || !game.running) return;
+    if (dir === 'up' && game.dy === 0) { game.dx = 0; game.dy = -1; }
+    else if (dir === 'down' && game.dy === 0) { game.dx = 0; game.dy = 1; }
+    else if (dir === 'left' && game.dx === 0) { game.dx = -1; game.dy = 0; }
+    else if (dir === 'right' && game.dx === 0) { game.dx = 1; game.dy = 0; }
+}
+
 
         // Snake touch controls
         let snakeTouchStartX = null, snakeTouchStartY = null;
@@ -747,7 +948,7 @@
             snakeTouchStartX = snakeTouchStartY = null;
         });
 
-        // Tetris Game - Modified for fast drop on down key/swipe
+       // Tetris Game - Fixed with proper error handling
         const COLS = 10;
         const ROWS = 20;
         const CELL = 32;
@@ -756,6 +957,7 @@
 
         function initTetris() {
             const canvas = document.getElementById('tetris-canvas');
+            if (!canvas) return;
             canvas.width = WIDTH;
             canvas.height = HEIGHT;
 
@@ -788,6 +990,7 @@
         };
 
         function newPiece() {
+            if (!game) return;
             const types = Object.keys(TETROMINOS);
             const type = types[Math.floor(Math.random() * types.length)];
             game.piece = TETROMINOS[type].map(r => [...r]);
@@ -797,7 +1000,11 @@
         }
 
         function tetrisLoop(time) {
-            if (!game || !game.running) return;
+            if (!game || !game.running || gameType !== 'tetris') return;
+
+            const canvas = document.getElementById('tetris-canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
 
             if (!game.last) game.last = time;
             game.drop += time - game.last;
@@ -817,8 +1024,11 @@
         }
 
         function drawTetris() {
+            if (!game) return;
             const canvas = document.getElementById('tetris-canvas');
             const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
@@ -832,18 +1042,21 @@
                 }
             }
 
-            // Draw piece
-            ctx.fillStyle = game.color;
-            for (let y = 0; y < game.piece.length; y++) {
-                for (let x = 0; x < game.piece[y].length; x++) {
-                    if (game.piece[y][x]) {
-                        ctx.fillRect((game.x + x) * CELL, (game.y + y) * CELL, CELL - 1, CELL - 1);
+            // Draw current piece
+            if (game.piece && game.color) {
+                ctx.fillStyle = game.color;
+                for (let y = 0; y < game.piece.length; y++) {
+                    for (let x = 0; x < game.piece[y].length; x++) {
+                        if (game.piece[y][x]) {
+                            ctx.fillRect((game.x + x) * CELL, (game.y + y) * CELL, CELL - 1, CELL - 1);
+                        }
                     }
                 }
             }
         }
 
         function tetrisRotate() {
+            if (!game || !game.running || !game.piece) return;
             const rotated = game.piece[0].map((_, i) =>
                 game.piece.map(row => row[i]).reverse()
             );
@@ -853,6 +1066,7 @@
         }
 
         function tetrisMove(dir) {
+            if (!game || !game.running) return;
             if (dir === 'left') {
                 game.x -= 1;
                 if (collision()) game.x += 1;
@@ -864,11 +1078,14 @@
         }
 
         function tetrisDrop() {
+            if (!game || !game.running) return;
             while (!collision(0, 1)) game.y++;
             placePiece();
         }
 
         function placePiece() {
+            if (!game || !game.piece) return;
+            
             for (let y = 0; y < game.piece.length; y++) {
                 for (let x = 0; x < game.piece[y].length; x++) {
                     if (game.piece[y][x]) {
@@ -905,14 +1122,16 @@
             }
         }
 
-        function collision(offX = 0, offY = 0, piece = game.piece) {
+        function collision(offX = 0, offY = 0, piece = game?.piece) {
+            if (!game || !piece) return true;
+            
             for (let y = 0; y < piece.length; y++) {
                 for (let x = 0; x < piece[y].length; x++) {
                     if (!piece[y][x]) continue;
                     const nx = game.x + x + offX;
                     const ny = game.y + y + offY;
                     if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
-                    if (ny >= 0 && game.grid[ny][nx]) return true;
+                    if (ny >= 0 && game.grid[ny] && game.grid[ny][nx]) return true;
                 }
             }
             return false;
@@ -940,175 +1159,231 @@
                 if (dx > 30) tetrisMove('right');
                 else if (dx < -30) tetrisMove('left');
             } else {
-                if (dy > 30) tetrisDrop(); // Fast drop on down swipe
+                if (dy > 30) tetrisDrop();
                 else if (dy < -30) tetrisRotate();
-                else tetrisRotate(); // tap = rotate
+                else tetrisRotate();
             }
             tetrisStartX = tetrisStartY = null;
         });
 
-        // Breakout Game - Modified for 1 life and 10% faster ball
-        function initBreakout() {
-            const canvas = document.getElementById('breakout-canvas');
-            
-            game = {
-                type: 'breakout',
-                running: true,
-                paddle: { x: canvas.width/2 - 60, y: canvas.height - 30, w: 120, h: 15, speed: 0, targetX: canvas.width/2 - 60 },
-                ball: { x: canvas.width/2, y: canvas.height - 50, dx: 5.5, dy: -5.5, r: 10 }, // 10% faster
-                blocks: [], score: 0, lives: 1, launched: false
-                
-            };
-            
-            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#a55eea'];
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 15; col++) {
-                    game.blocks.push({
-                        x: col * 40, y: row * 20 + 50, w: 35, h: 15,
-                        color: colors[row % 5], alive: true
-                    });
-                }
-            }
-            
-            animationFrameId = requestAnimationFrame(breakoutLoop);
-        }
 
-        function breakoutLoop() {
-            if (!game || !game.running) return;
-            
-            const canvas = document.getElementById('breakout-canvas');
-            const ctx = canvas.getContext('2d');
-            // Add this in breakoutLoop(), before the ball movement logic
-            const easing = 0.3; // Adjust this value (0.1 = slow, 0.5 = fast)
-            game.paddle.x += (game.paddle.targetX - game.paddle.x) * easing;
-
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            let speed = 0;
-            if (keys['ArrowLeft'] || keys['a']) speed = -8;
-            if (keys['ArrowRight'] || keys['d']) speed = 8;
-            
-            game.paddle.speed += (speed - game.paddle.speed) * 0.2;
-            game.paddle.x += game.paddle.speed;
-            game.paddle.x = Math.max(0, Math.min(canvas.width - game.paddle.w, game.paddle.x));
-            
-            if (game.launched) {
-                game.ball.x += game.ball.dx;
-                game.ball.y += game.ball.dy;
-                
-                if (game.ball.x <= game.ball.r || game.ball.x >= canvas.width - game.ball.r) game.ball.dx = -game.ball.dx;
-                if (game.ball.y <= game.ball.r) game.ball.dy = -game.ball.dy;
-                
-                if (game.ball.y >= canvas.height) {
-                    game.lives--;
-                    document.getElementById('breakout-lives').textContent = game.lives;
-                    if (game.lives <= 0) {
-                        const isNewRecord = saveHighScore('breakout', game.score);
-                        const title = isNewRecord ? '🎉 New High Score!' : 'Game Over!';
-                        showGameOver(title, `Score: ${game.score}`);
-                        return;
-                    }
-                    game.ball.x = canvas.width/2;
-                    game.ball.y = canvas.height - 50;
-                    game.ball.dx = 5.5;
-                    game.ball.dy = -5.5;
-                    game.launched = false;
-                }
-                
-                if (game.ball.y + game.ball.r >= game.paddle.y &&
-                    game.ball.x >= game.paddle.x && game.ball.x <= game.paddle.x + game.paddle.w) {
-                    game.ball.dy = -Math.abs(game.ball.dy);
-                    const hit = (game.ball.x - game.paddle.x) / game.paddle.w;
-                    game.ball.dx = (hit - 0.5) * 11; // Slightly faster
-                }
-                
-                for (let block of game.blocks) {
-                    if (block.alive && 
-                        game.ball.x + game.ball.r >= block.x && 
-                        game.ball.x - game.ball.r <= block.x + block.w &&
-                        game.ball.y + game.ball.r >= block.y && 
-                        game.ball.y - game.ball.r <= block.y + block.h) {
-                        block.alive = false;
-                        game.ball.dy = -game.ball.dy;
-                        game.score += 10;
-                        document.getElementById('breakout-score').textContent = game.score;
-                        if (game.blocks.every(b => !b.alive)) {
-                            const isNewRecord = saveHighScore('breakout', game.score);
-                            const title = isNewRecord ? '🎉 New High Score!' : 'You Win!';
-                            showGameOver(title, `Score: ${game.score}`);
-                            return;
-                        }
-                        break;
-                    }
-                }
-            } else {
-                game.ball.x = game.paddle.x + game.paddle.w / 2;
-                game.ball.y = game.paddle.y - game.ball.r;
-            }
-            
-            game.blocks.forEach(b => {
-                if (b.alive) {
-                    ctx.fillStyle = b.color;
-                    ctx.fillRect(b.x, b.y, b.w, b.h);
-                }
+        // Breakout Game - Hard Mode
+function initBreakout() {
+    const canvas = document.getElementById('breakout-canvas');
+    if (!canvas) return;
+    
+    game = {
+        type: 'breakout',
+        running: true,
+        paddle: { 
+            x: canvas.width/2 - 60, 
+            y: canvas.height - 30, 
+            w: 120, h: 15, 
+            speed: 0, 
+            targetX: canvas.width/2 - 60 
+        },
+        ball: { 
+            x: canvas.width/2, 
+            y: canvas.height - 50, 
+            dx: 10, dy: -10, 
+            r: 10 
+        },
+        blocks: [], 
+        score: 0, 
+        lives: 1, 
+        launched: false
+    };
+    
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#a55eea'];
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 15; col++) {
+            game.blocks.push({
+                x: col * 40, 
+                y: row * 20 + 50, 
+                w: 35, h: 15,
+                color: colors[row % 5], 
+                alive: true
             });
-            
-            ctx.fillStyle = '#ff6b6b';
-            ctx.fillRect(game.paddle.x, game.paddle.y, game.paddle.w, game.paddle.h);
-            
-            ctx.fillStyle = '#ffd93d';
-            ctx.beginPath();
-            ctx.arc(game.ball.x, game.ball.y, game.ball.r, 0, Math.PI * 2);
-            ctx.fill();
-            
-            animationFrameId = requestAnimationFrame(breakoutLoop);
         }
+    }
+    
+    // ✅ desktop launch support
+    canvas.addEventListener('click', () => {
+        if (game && !game.launched) game.launched = true;
+    });
 
-        // Breakout touch controls
-        function breakoutMove(dir) {
-            if (!game || !game.running) return;
-            touchMoving = true;
-            if (dir === 'left') keys['ArrowLeft'] = true;
-            else if (dir === 'right') keys['ArrowRight'] = true;
+    animationFrameId = requestAnimationFrame(breakoutLoop);
+}
+
+function breakoutLoop() {
+    if (!game || !game.running || gameType !== 'breakout') return;
+    
+    const canvas = document.getElementById('breakout-canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const easing = 0.3;
+    game.paddle.x += (game.paddle.targetX - game.paddle.x) * easing;
+    
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    let speed = 0;
+    if (keys['ArrowLeft'] || keys['a']) speed = -8;
+    if (keys['ArrowRight'] || keys['d']) speed = 8;
+    
+    game.paddle.speed += (speed - game.paddle.speed) * 0.2;
+    game.paddle.x += game.paddle.speed;
+    game.paddle.x = Math.max(0, Math.min(canvas.width - game.paddle.w, game.paddle.x));
+    
+    if (game.launched) {
+        game.ball.x += game.ball.dx;
+        game.ball.y += game.ball.dy;
+        
+        // walls
+        if (game.ball.x <= game.ball.r || game.ball.x >= canvas.width - game.ball.r) game.ball.dx = -game.ball.dx;
+        if (game.ball.y <= game.ball.r) game.ball.dy = -game.ball.dy;
+        
+        // missed ball
+        if (game.ball.y >= canvas.height) {
+            game.lives--;
+            if (game.lives <= 0) {
+                const isNewRecord = saveHighScore('breakout', game.score);
+                const title = isNewRecord ? '🎉 New High Score!' : 'Game Over!';
+                showGameOver(title, `Score: ${game.score}`);
+                return;
+            }
+            game.ball.x = canvas.width/2;
+            game.ball.y = canvas.height - 50;
+            game.ball.dx = 10;
+            game.ball.dy = -10;
+            game.launched = false;
         }
+        
+        // paddle collision
+        if (game.ball.y + game.ball.r >= game.paddle.y &&
+            game.ball.x >= game.paddle.x && game.ball.x <= game.paddle.x + game.paddle.w) {
+            game.ball.dy = -Math.abs(game.ball.dy);
+            const hit = (game.ball.x - game.paddle.x) / game.paddle.w;
+            game.ball.dx = (hit - 0.5) * 12;
 
-        function breakoutStop() {
-            touchMoving = false;
-            keys['ArrowLeft'] = false;
-            keys['ArrowRight'] = false;
+            //  increase speed after paddle hit
+            game.ball.dx *= 1.02;
+            game.ball.dy *= 1.02;
         }
+        
+        // block collisions
+        for (let block of game.blocks) {
+            if (block.alive && 
+                game.ball.x + game.ball.r >= block.x && 
+                game.ball.x - game.ball.r <= block.x + block.w &&
+                game.ball.y + game.ball.r >= block.y && 
+                game.ball.y - game.ball.r <= block.y + block.h) {
+                
+                block.alive = false;
+                game.ball.dy = -game.ball.dy;
+                game.score += 10;
+                document.getElementById('breakout-score').textContent = game.score;
 
-        document.getElementById('breakout-canvas').addEventListener('touchmove', e => {
+                // accelerate after block hit
+                game.ball.dx *= 1.02;
+                game.ball.dy *= 1.02;
+
+                // shrink paddle every 5 blocks
+                if (game.score % 80 === 0 && game.paddle.w > 30) {
+                    game.paddle.w -= 5;
+                }
+
+                if (game.blocks.every(b => !b.alive)) {
+                    const isNewRecord = saveHighScore('breakout', game.score);
+                    const title = isNewRecord ? '🎉 New High Score!' : 'You Win!';
+                    showGameOver(title, `Score: ${game.score}`);
+                    return;
+                }
+                break;
+            }
+        }
+    } else {
+        game.ball.x = game.paddle.x + game.paddle.w / 2;
+        game.ball.y = game.paddle.y - game.ball.r;
+    }
+    
+    // draw blocks
+    game.blocks.forEach(b => {
+        if (b.alive) {
+            ctx.fillStyle = b.color;
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+        }
+    });
+    
+    // draw paddle
+    ctx.fillStyle = '#ff6b6b';
+    ctx.fillRect(game.paddle.x, game.paddle.y, game.paddle.w, game.paddle.h);
+    
+    // draw ball
+    ctx.fillStyle = '#ffd93d';
+    ctx.beginPath();
+    ctx.arc(game.ball.x, game.ball.y, game.ball.r, 0, Math.PI * 2);
+    ctx.fill();
+    
+    animationFrameId = requestAnimationFrame(breakoutLoop);
+}
+
+// Breakout touch controls
+document.getElementById('breakout-canvas').addEventListener('touchmove', e => {
     e.preventDefault();
     if (!game) return;
     let rect = e.target.getBoundingClientRect();
     let x = e.touches[0].clientX - rect.left;
     let canvasX = x * (e.target.width / rect.width);
     
-    // Set target position instead of direct position
     game.paddle.targetX = canvasX - game.paddle.w / 2;
     game.paddle.targetX = Math.max(0, Math.min(e.target.width - game.paddle.w, game.paddle.targetX));
 });
 
-
-        document.getElementById('breakout-canvas').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (game && !game.launched) game.launched = true;
-        });
-
-        // Pong Game - Modified for better ball bouncing and 1P mode controls
-        let pongMode = false;
-
-        function togglePongMode() {
-            pongMode = !pongMode;
-            document.getElementById('mode-btn').textContent = pongMode ? '1P Mode' : '2P Mode';
-            restartGame('pong');
+document.addEventListener('keydown', e => {
+    if (gameType === 'breakout' && game && !game.launched) {
+        if (['ArrowUp',' ','Spacebar'].includes(e.key)) {
+            game.launched = true;
         }
+    }
+});
+
+document.getElementById('breakout-canvas').addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (game && !game.launched) game.launched = true;
+});
+
+
+        // Pong Game - Fixed
+       let pongMode = false; // false = 1P mode by default
+
+function togglePongMode() {
+    pongMode = !pongMode;
+
+    const btn = document.getElementById('mode-btn');
+    const p1Label = document.getElementById('p1-label');
+    const p2Label = document.getElementById('p2-label');
+
+    if (pongMode) {
+        // switched into 2P mode
+        if (btn) btn.textContent = '1P Mode'; 
+        if (p1Label) p1Label.textContent = 'P1';
+        if (p2Label) p2Label.textContent = 'P2';
+    } else {
+        // switched into 1P mode
+        if (btn) btn.textContent = '2P Mode'; 
+        if (p1Label) p1Label.textContent = 'You';
+        if (p2Label) p2Label.textContent = 'AI';
+    }
+
+    restartGame('pong');
+}
+
 
         function initPong() {
             const canvas = document.getElementById('pong-canvas');
+            if (!canvas) return;
             
             game = {
                 type: 'pong',
@@ -1123,10 +1398,11 @@
         }
 
         function pongLoop() {
-            if (!game || !game.running) return;
+            if (!game || !game.running || gameType !== 'pong') return;
             
             const canvas = document.getElementById('pong-canvas');
             const ctx = canvas.getContext('2d');
+            if (!ctx) return;
             
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1138,19 +1414,17 @@
             ctx.lineTo(canvas.width/2, canvas.height);
             ctx.stroke();
             ctx.setLineDash([]);
-            // Add this in pongLoop(), after the AI logic and before rendering
-            const easing = 0.3; // Adjust this value for responsiveness
+            
+            const easing = 0.3;
             game.p1.y += (game.p1.targetY - game.p1.y) * easing;
             if (pongMode) {
                 game.p2.y += (game.p2.targetY - game.p2.y) * easing;
             }
-
             
             if (game.started) {
                 game.ball.x += game.ball.dx;
                 game.ball.y += game.ball.dy;
                 
-                // Better ball bouncing off top and bottom edges
                 if (game.ball.y - game.ball.r <= 0) {
                     game.ball.y = game.ball.r;
                     game.ball.dy = Math.abs(game.ball.dy);
@@ -1198,12 +1472,11 @@
                 
                 if (!pongMode) {
                     const aiTarget = game.ball.y - 50;
-                    game.p2.y += (aiTarget - game.p2.y) * 0.1;
+                    game.p2.y += (aiTarget - game.p2.y) * 0.07;
                     game.p2.y = Math.max(0, Math.min(canvas.height - game.p2.h, game.p2.y));
                 }
             }
             
-            // Handle 1P mode controls - both w/s and up/down keys work
             let p1Speed = 0;
             if (keys['w'] || keys['W'] || (!pongMode && keys['ArrowUp'])) p1Speed = -8;
             if (keys['s'] || keys['S'] || (!pongMode && keys['ArrowDown'])) p1Speed = 8;
@@ -1237,6 +1510,7 @@
         }
 
         function resetBall() {
+            if (!game) return;
             const canvas = document.getElementById('pong-canvas');
             game.ball.x = canvas.width/2;
             game.ball.y = canvas.height/2;
@@ -1247,33 +1521,34 @@
         }
 
         // Pong touch controls
-        function pongMove(dir) {
-            if (!game || !game.running) return;
-            if (dir === 'up') keys['w'] = true;
-            else if (dir === 'down') keys['s'] = true;
-        }
-
-        function pongStop() {
-            keys['w'] = false;
-            keys['s'] = false;
-        }
-
         document.getElementById('pong-canvas').addEventListener('touchmove', e => {
     e.preventDefault();
     if (!game) return;
     let rect = e.target.getBoundingClientRect();
-    let touch = e.touches[0];
-    let x = touch.clientX - rect.left;
-    let y = touch.clientY - rect.top;
-    let canvasY = y * (e.target.height / rect.height);
 
-    if (x < rect.width / 2) {
-        // Set target position instead of direct position
-        game.p1.targetY = canvasY - game.p1.h / 2;
-        game.p1.targetY = Math.max(0, Math.min(e.target.height - game.p1.h, game.p1.targetY));
-    } else if (pongMode) {
-        game.p2.targetY = canvasY - game.p2.h / 2;
-        game.p2.targetY = Math.max(0, Math.min(e.target.height - game.p2.h, game.p2.targetY));
+    for (let i = 0; i < e.touches.length; i++) {
+        let touch = e.touches[i];
+        let x = touch.clientX - rect.left;
+        let y = touch.clientY - rect.top;
+        let canvasY = y * (e.target.height / rect.height);
+
+        if (x < rect.width / 2) {
+            // Left half → P1
+            game.p1.targetY = canvasY - game.p1.h / 2;
+            game.p1.targetY = Math.max(0, Math.min(e.target.height - game.p1.h, game.p1.targetY));
+        } else if (pongMode) {
+            // Right half → P2 (only in 2P mode)
+            game.p2.targetY = canvasY - game.p2.h / 2;
+            game.p2.targetY = Math.max(0, Math.min(e.target.height - game.p2.h, game.p2.targetY));
+        }
+    }
+});
+
+        document.addEventListener('keydown', e => {
+    if (gameType === 'pong' && game && !game.started) {
+        if (['ArrowUp','ArrowDown','w','W','s','S',' '].includes(e.key)) {
+            game.started = true;
+        }
     }
 });
 
@@ -1283,109 +1558,83 @@
             if (game && !game.started) game.started = true;
         });
 
-        // Car Racing Game - Modified for 5% increased default speed
+        // Car Racing Game - Fixed
         function initRacer() {
             const canvas = document.getElementById('racer-canvas');
+            if (!canvas) return;
             
             game = {
                 type: 'racer',
                 running: true,
                 car: { x: 185, y: canvas.height - 100, w: 30, h: 50, lane: 1 },
-                enemies: [], score: 0, speed: 1, enemyTimer: 0, roadOffset: 0  // 5% faster
+                enemies: [], score: 0, speed: 6, enemyTimer: 0, roadOffset: 0
             };
             
-            document.getElementById('racer-speed').textContent = 1;
+            const speedElement = document.getElementById('racer-speed');
+            if (speedElement) speedElement.textContent = '60';
             animationFrameId = requestAnimationFrame(racerLoop);
         }
 
         function drawCar(ctx, x, y, w, h, color, isPlayer = false) {
-    // Car body (rounded rectangle)
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(x + 5, y);
-    ctx.lineTo(x + w - 5, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + 5);
-    ctx.lineTo(x + w, y + h - 5);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - 5, y + h);
-    ctx.lineTo(x + 5, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - 5);
-    ctx.lineTo(x, y + 5);
-    ctx.quadraticCurveTo(x, y, x + 5, y);
-    ctx.closePath();
-    ctx.fill();
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x + 5, y);
+            ctx.lineTo(x + w - 5, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + 5);
+            ctx.lineTo(x + w, y + h - 5);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - 5, y + h);
+            ctx.lineTo(x + 5, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - 5);
+            ctx.lineTo(x, y + 5);
+            ctx.quadraticCurveTo(x, y, x + 5, y);
+            ctx.closePath();
+            ctx.fill();
 
-    ctx.fillStyle = "#2c3e50"; // window color
+            ctx.fillStyle = "#2c3e50";
 
-    if (isPlayer) {
-        // 🚗 Player car faces DOWN (original orientation)
-        // Windshield at top
-        ctx.fillRect(x + 4, y + 3, w - 8, h * 0.25);
-        // Rear window at bottom
-        ctx.fillRect(x + 4, y + h * 0.7, w - 8, h * 0.25);
+            if (isPlayer) {
+                ctx.fillRect(x + 4, y + 3, w - 8, h * 0.25);
+                ctx.fillRect(x + 4, y + h * 0.7, w - 8, h * 0.25);
+                ctx.fillStyle = "#ffeb3b";
+                ctx.fillRect(x + 2, y + 2, 4, 6);
+                ctx.fillRect(x + w - 6, y + 2, 4, 6);
+                ctx.fillStyle = "#f00";
+                ctx.fillRect(x + 2, y + h - 8, 4, 6);
+                ctx.fillRect(x + w - 6, y + h - 8, 4, 6);
+                ctx.fillStyle = "rgba(30, 30, 30, 0.8)";
+                ctx.fillRect(x + w * 0.25, y + h * 0.4, w * 0.5, h * 0.2);
+            } else {
+                ctx.fillRect(x + 4, y + h * 0.7, w - 8, h * 0.25);
+                ctx.fillRect(x + 4, y + 3, w - 8, h * 0.25);
+                ctx.fillStyle = "#ffeb3b";
+                ctx.fillRect(x + 2, y + h - 8, 4, 6);
+                ctx.fillRect(x + w - 6, y + h - 8, 4, 6);
+                ctx.fillStyle = "#f00";
+                ctx.fillRect(x + 2, y + 2, 4, 6);
+                ctx.fillRect(x + w - 6, y + 2, 4, 6);
+            }
+        }
 
-        // Headlights (top)
-        ctx.fillStyle = "#ffeb3b";
-        ctx.fillRect(x + 2, y + 2, 4, 6);
-        ctx.fillRect(x + w - 6, y + 2, 4, 6);
-
-        // Taillights (bottom)
-        ctx.fillStyle = "#f00";
-        ctx.fillRect(x + 2, y + h - 8, 4, 6);
-        ctx.fillRect(x + w - 6, y + h - 8, 4, 6);
-        // 🌞 Sunroof (center rectangle on top of body)
-        ctx.fillStyle = "rgba(30, 30, 30, 0.8)";
-        ctx.fillRect(x + w * 0.25, y + h * 0.4, w * 0.5, h * 0.2);
-
-    } else {
-        // 🚙 Enemy cars face UP (flipped)
-        // Windshield at bottom
-        ctx.fillRect(x + 4, y + h * 0.7, w - 8, h * 0.25);
-        // Rear window at top
-        ctx.fillRect(x + 4, y + 3, w - 8, h * 0.25);
-
-        // Headlights (bottom now)
-        ctx.fillStyle = "#ffeb3b";
-        ctx.fillRect(x + 2, y + h - 8, 4, 6);
-        ctx.fillRect(x + w - 6, y + h - 8, 4, 6);
-
-        // Taillights (top now)
-        ctx.fillStyle = "#f00";
-        ctx.fillRect(x + 2, y + 2, 4, 6);
-        ctx.fillRect(x + w - 6, y + 2, 4, 6);
-    }
-}
-
-
-   function drawTruck(ctx, x, y, w, h) {
-    // Trailer (top part now)
-    ctx.fillStyle = '#e7a53c';
-    ctx.fillRect(x, y, w, h * 0.8);
-
-    // Cab (bottom part — flipped)
-    ctx.fillStyle = '#c0a72b';
-    ctx.fillRect(x, y + h * 0.7, w, h * 0.3);
-
-    // Windshield (near bottom, since truck is flipped)
-    ctx.fillStyle = '#2c3e50';
-    ctx.fillRect(x + 3, y + h * 0.75, w - 6, h * 0.15);
-
-    // Grill (bottom edge)
-    ctx.fillStyle = '#999';
-    ctx.fillRect(x + 2, y + h - 6, w - 4, 4);
-
-    // Headlights (bottom corners)
-    ctx.fillStyle = '#ffeb3b';
-    ctx.fillRect(x + 2, y + h - 10, 4, 4);
-    ctx.fillRect(x + w - 6, y + h - 10, 4, 4);
-}
-
-
+        function drawTruck(ctx, x, y, w, h) {
+            ctx.fillStyle = '#e7a53c';
+            ctx.fillRect(x, y, w, h * 0.8);
+            ctx.fillStyle = '#c0a72b';
+            ctx.fillRect(x, y + h * 0.7, w, h * 0.3);
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(x + 3, y + h * 0.75, w - 6, h * 0.15);
+            ctx.fillStyle = '#999';
+            ctx.fillRect(x + 2, y + h - 6, w - 4, 4);
+            ctx.fillStyle = '#ffeb3b';
+            ctx.fillRect(x + 2, y + h - 10, 4, 4);
+            ctx.fillRect(x + w - 6, y + h - 10, 4, 4);
+        }
 
         function racerLoop() {
-            if (!game || !game.running) return;
+            if (!game || !game.running || gameType !== 'racer') return;
             
             const canvas = document.getElementById('racer-canvas');
             const ctx = canvas.getContext('2d');
+            if (!ctx) return;
             
             ctx.fillStyle = '#34495e';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1418,7 +1667,7 @@
 
                 for (let i = 0; i < lanesToSpawn; i++) {
                     const lane = laneIndices[i];
-                    const vehicleType = Math.random() > 0.7 ? 'truck' : 'car';
+                    const vehicleType = Math.random() > 0.6 ? 'truck' : 'car';
                     game.enemies.push({
                         x: laneX[lane],
                         y: -60,
@@ -1440,9 +1689,11 @@
                     game.score += 10;
                     if (game.score % 100 === 0) {
                         game.speed += 1; 
-                        document.getElementById('racer-speed').textContent = game.speed;
+                        const speedElement = document.getElementById('racer-speed');
+                        if (speedElement) speedElement.textContent = game.speed*10;
                     }
-                    document.getElementById('racer-score').textContent = game.score;
+                    const scoreElement = document.getElementById('racer-score');
+                    if (scoreElement) scoreElement.textContent = game.score;
                     continue;
                 }
                 
@@ -1457,13 +1708,10 @@
                     drawTruck(ctx, enemy.x, enemy.y, enemy.w, enemy.h);
                 } else {
                     drawCar(ctx, enemy.x, enemy.y, enemy.w, enemy.h, '#e74c3c', false);
-
                 }
             }
             
             drawCar(ctx, game.car.x, game.car.y, game.car.w, game.car.h, '#3498db', true);
-
-            
             animationFrameId = requestAnimationFrame(racerLoop);
         }
 
@@ -1473,233 +1721,222 @@
             else if (dir === 'right' && game.car.lane < 2) game.car.lane += 1;
         }
 
-       // Racer direct canvas touch controls
-document.getElementById('racer-canvas').addEventListener('touchstart', e => {
-    e.preventDefault();
+        document.getElementById('racer-canvas').addEventListener('touchstart', e => {
+            e.preventDefault();
+            if (!game || !game.running) return;
+            
+            const canvas = e.target;
+            const rect = canvas.getBoundingClientRect();
+            const touchX = e.touches[0].clientX - rect.left;
+            
+            if (touchX < rect.width / 2) {
+                racerMove('left');
+            } else {
+                racerMove('right');
+            }
+        });
+
+        // Dodge Game - Modified for smooth movement with velocity and friction
+function initDodge() {
+    const canvas = document.getElementById('dodge-canvas');
+
+    game = {
+        type: 'dodge',
+        running: true,
+        score: 0,
+        timer: 0,
+        baseObstacleSpeed: 5,
+        obstacles: [],
+        player: {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            r: 15,
+            vx: 0,
+            vy: 0
+        }
+    };
+
+    document.getElementById('dodge-score').textContent = '0';
+    animationFrameId = requestAnimationFrame(dodgeLoop);
+}
+
+// Updated obstacle colors
+const OBSTACLE_COLORS = [
+    '#FF4444', // Red
+    '#FF8800', // Orange  
+    '#FFDD00', // Yellow
+    '#44FF44', // Green
+    '#0088FF', // Blue
+    '#8844FF', // Purple
+    '#FF44DD'  // Pink
+];
+
+function dodgeLoop() {
     if (!game || !game.running) return;
+
+    const canvas = document.getElementById('dodge-canvas');
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#2c3e50';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    const canvas = e.target;
-    const rect = canvas.getBoundingClientRect();
-    const touchX = e.touches[0].clientX - rect.left;
+    // Apply friction
+    game.player.vx *= 0.95;
+    game.player.vy *= 0.95;
     
-    // Touch left half = move left, touch right half = move right
-    if (touchX < rect.width / 2) {
-        racerMove('left');
-    } else {
-        racerMove('right');
+    // Add thrust based on key presses
+    const thrust = 0.6;
+    if(keys['ArrowUp']) game.player.vy -= thrust;
+    if(keys['ArrowDown']) game.player.vy += thrust;
+    if(keys['ArrowLeft']) game.player.vx -= thrust;
+    if(keys['ArrowRight']) game.player.vx += thrust;
+    
+    // Update position using velocity ONLY
+    game.player.x += game.player.vx;
+    game.player.y += game.player.vy;
+
+    // Clamp player inside canvas
+    game.player.x = Math.max(game.player.r, Math.min(canvas.width - game.player.r, game.player.x));
+    game.player.y = Math.max(game.player.r, Math.min(canvas.height - game.player.r, game.player.y));
+
+    // Draw player
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(game.player.x, game.player.y, game.player.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Obstacle spawn - FIXED: Add random color to each obstacle
+    game.timer++;
+    if (game.timer > 30) {
+        const side = Math.floor(Math.random() * 4);
+        const speedMultiplier = 1 + Math.floor(game.score / 100) * 0.15;
+        const colorIndex = Math.floor(Math.random() * OBSTACLE_COLORS.length);
+        
+        let obs = { 
+            w: 22 + Math.random() * 42, 
+            h: 22 + Math.random() * 42, 
+            dx: 0, 
+            dy: 0,
+            color: OBSTACLE_COLORS[colorIndex] // Add random color
+        };
+
+        if (side === 0) { obs.x = -obs.w; obs.y = Math.random() * canvas.height; obs.dx = game.baseObstacleSpeed * speedMultiplier; }
+        else if (side === 1) { obs.x = canvas.width; obs.y = Math.random() * canvas.height; obs.dx = -game.baseObstacleSpeed * speedMultiplier; }
+        else if (side === 2) { obs.x = Math.random() * canvas.width; obs.y = -obs.h; obs.dy = game.baseObstacleSpeed * speedMultiplier; }
+        else { obs.x = Math.random() * canvas.width; obs.y = canvas.height; obs.dy = -game.baseObstacleSpeed * speedMultiplier; }
+
+        game.obstacles.push(obs);
+        game.timer = 0;
     }
+
+    // Draw obstacles & check collisions - FIXED: Use individual obstacle colors
+    for (let i = game.obstacles.length - 1; i >= 0; i--) {
+        const obs = game.obstacles[i];
+        obs.x += obs.dx;
+        obs.y += obs.dy;
+
+        // Use the obstacle's individual color instead of fixed red
+        ctx.fillStyle = obs.color;
+        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+
+        // Remove off-screen
+        if (obs.x < -100 || obs.x > canvas.width + 100 || obs.y < -100 || obs.y > canvas.height + 100) {
+            game.obstacles.splice(i, 1);
+            game.score += 10;
+            document.getElementById('dodge-score').textContent = game.score;
+            continue;
+        }
+
+        // Collision detection
+        const distX = game.player.x - (obs.x + obs.w / 2);
+        const distY = game.player.y - (obs.y + obs.h / 2);
+        const distance = Math.sqrt(distX * distX + distY * distY);
+        if (distance < game.player.r + Math.min(obs.w, obs.h) / 2) {
+            const isNewRecord = saveHighScore('dodge', game.score);
+            const title = isNewRecord ? '🎉 New High Score!' : 'Hit!';
+            showGameOver(title, `Score: ${game.score}`);
+            return;
+        }
+    }
+
+    animationFrameId = requestAnimationFrame(dodgeLoop);
+}
+
+// Keyboard / button impulse movement
+function dodgeMove(dir) {
+    if (!game || !game.running) return;
+    const thrust = 8;
+    if (dir === 'left') game.player.vx -= thrust;
+    else if (dir === 'right') game.player.vx += thrust;
+    else if (dir === 'up') game.player.vy -= thrust;
+    else if (dir === 'down') game.player.vy += thrust;
+}
+
+// Touch swipe
+let dodgeTouchStartX = null, dodgeTouchStartY = null, dodgeTouchStartTime = null;
+const dodgeCanvas = document.getElementById('dodge-canvas');
+
+dodgeCanvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    dodgeTouchStartX = t.clientX;
+    dodgeTouchStartY = t.clientY;
+    dodgeTouchStartTime = Date.now();
+});
+
+dodgeCanvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    if (!game || dodgeTouchStartX === null) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - dodgeTouchStartX;
+    const dy = t.clientY - dodgeTouchStartY;
+    const dt = Date.now() - dodgeTouchStartTime;
+
+    if (dt < 300) {
+        game.player.vx += dx / 15;
+        game.player.vy += dy / 15;
+    }
+
+    dodgeTouchStartX = dodgeTouchStartY = dodgeTouchStartTime = null;
 });
 
 
-        // Dodge Game - Modified for smooth movement with velocity and friction
-        function initDodge() {
-            const canvas = document.getElementById('dodge-canvas');
+// Touch buttons - FIXED: Added missing release function
+const dodgeBtns = document.querySelectorAll('#dodge-touch-controls .tc-btn');
+dodgeBtns.forEach(btn => {
+    const key = btn.dataset.key;
+    const press = e => { e.preventDefault(); keys[key] = true; };
+    const release = e => { e.preventDefault(); keys[key] = false; }; // FIXED: Added missing release function
 
-            game = {
-                type: 'dodge',
-                running: true,
-                score: 0,
-                timer: 0,
-                baseObstacleSpeed: 3,
-                obstacles: [],
-                player: {
-                    x: canvas.width / 2,
-                    y: canvas.height / 2,
-                    r: 15,
-                    vx: 0,
-                    vy: 0
-                }
-            };
+    btn.addEventListener('touchstart', press, { passive: false });
+    btn.addEventListener('touchend', release);
+    btn.addEventListener('touchcancel', release);
+    btn.addEventListener('mousedown', press);
+    btn.addEventListener('mouseup', release);
+});
 
-            document.getElementById('dodge-score').textContent = 0;
-            animationFrameId = requestAnimationFrame(dodgeLoop);
-        }
+// Prevent scrolling on touch
+document.querySelectorAll('canvas').forEach(c => {
+    c.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+});
 
-        function dodgeLoop() {
-            if (!game || !game.running) return;
-            
-            const canvas = document.getElementById('dodge-canvas');
-            const ctx = canvas.getContext('2d');
-            
-            ctx.fillStyle = '#2c3e50';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Apply velocity and friction for smooth movement
-            game.player.x += game.player.vx;
-            game.player.y += game.player.vy;
-            game.player.vx *= 0.89;  // Friction
-            game.player.vy *= 0.89;  // Friction
-                        
-            game.player.x = Math.max(game.player.r, Math.min(canvas.width - game.player.r, game.player.x));
-            game.player.y = Math.max(game.player.r, Math.min(canvas.height - game.player.r, game.player.y));
-            
-            game.timer++;
-            if (game.timer > 40) {
-                const side = Math.floor(Math.random() * 4);
-                const speedMultiplier = 1 + Math.floor(game.score / 50) * 0.15;
-                let obs = { 
-                    w: 20 + Math.random() * 30, 
-                    h: 20 + Math.random() * 30, 
-                    dx: 0, dy: 0 
-                };
-                
-                if (side === 0) { 
-                    obs.x = -obs.w; 
-                    obs.y = Math.random() * canvas.height; 
-                    obs.dx = game.baseObstacleSpeed * speedMultiplier; 
-                }
-                else if (side === 1) { 
-                    obs.x = canvas.width; 
-                    obs.y = Math.random() * canvas.height; 
-                    obs.dx = -game.baseObstacleSpeed * speedMultiplier; 
-                }
-                else if (side === 2) { 
-                    obs.x = Math.random() * canvas.width; 
-                    obs.y = -obs.h; 
-                    obs.dy = game.baseObstacleSpeed * speedMultiplier; 
-                }
-                else { 
-                    obs.x = Math.random() * canvas.width; 
-                    obs.y = canvas.height; 
-                    obs.dy = -game.baseObstacleSpeed * speedMultiplier; 
-                }
-                
-                game.obstacles.push(obs);
-                game.timer = 0;
-            }
-            
-            for (let i = game.obstacles.length - 1; i >= 0; i--) {
-                const obs = game.obstacles[i];
-                obs.x += obs.dx;
-                obs.y += obs.dy;
-                
-                if (obs.x < -100 || obs.x > canvas.width + 100 || obs.y < -100 || obs.y > canvas.height + 100) {
-                    game.obstacles.splice(i, 1);
-                    game.score += 5;
-                    document.getElementById('dodge-score').textContent = game.score;
-                    continue;
-                }
-                
-                const distX = game.player.x - (obs.x + obs.w/2);
-                const distY = game.player.y - (obs.y + obs.h/2);
-                const distance = Math.sqrt(distX * distX + distY * distY);
-                
-                if (distance < game.player.r + Math.min(obs.w, obs.h)/2) {
-                    const isNewRecord = saveHighScore('dodge', game.score);
-                    const title = isNewRecord ? '🎉 New High Score!' : 'Hit!';
-                    showGameOver(title, `Score: ${game.score}`);
-                    return;
-                }
-            }
-            
-            ctx.fillStyle = '#e74c3c';
-            game.obstacles.forEach(obs => {
-                ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-            });
-            
-            ctx.fillStyle = '#3498db';
-            ctx.beginPath();
-            ctx.arc(game.player.x, game.player.y, game.player.r, 0, Math.PI * 2);
-            ctx.fill();
-            
-            animationFrameId = requestAnimationFrame(dodgeLoop);
-        }
+// Toggle info text
+function toggleInfo() {
+    const info = document.getElementById("infoText");
+    if (info.style.display === "block") {
+        info.style.display = "none";
+    } else {
+        info.style.display = "block";
+    }
+}
 
-        // Dodge key-based movement
-        function dodgeMove(dir) {
-            if (!game || !game.running) return;
-            const thrust = 8;  // Impulse strength
-            if (dir === 'left') game.player.vx -= thrust;
-            else if (dir === 'right') game.player.vx += thrust;
-            else if (dir === 'up') game.player.vy -= thrust;
-            else if (dir === 'down') game.player.vy += thrust;
-        }
-
-        // Dodge touch controls
-        let dodgeTouchStartX = null, dodgeTouchStartY = null, dodgeTouchStartTime = null;
-        const dodgeCanvas = document.getElementById('dodge-canvas');
-
-        dodgeCanvas.addEventListener('touchstart', e => {
-            e.preventDefault();
-            let t = e.changedTouches[0];
-            dodgeTouchStartX = t.clientX;
-            dodgeTouchStartY = t.clientY;
-            dodgeTouchStartTime = Date.now();
-        });
-
-        dodgeCanvas.addEventListener('touchend', e => {
-            e.preventDefault();
-            if (!game || dodgeTouchStartX === null) return;
-            let t = e.changedTouches[0];
-            let dx = t.clientX - dodgeTouchStartX;
-            let dy = t.clientY - dodgeTouchStartY;
-            let dt = Date.now() - dodgeTouchStartTime;
-
-            if (dt < 300) {
-                game.player.vx += dx / 15;  // Convert swipe to velocity
-                game.player.vy += dy / 15;
-            }
-
-            dodgeTouchStartX = dodgeTouchStartY = dodgeTouchStartTime = null;
-        });
-
-        // Keyboard Events
-        document.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-            
-            if (document.getElementById('snake-game').classList.contains('active')) {
-                if (e.key === 'ArrowUp') snakeDir('up');
-                else if (e.key === 'ArrowDown') snakeDir('down');
-                else if (e.key === 'ArrowLeft') snakeDir('left');
-                else if (e.key === 'ArrowRight') snakeDir('right');
-            } else if (document.getElementById('tetris-game').classList.contains('active')) {
-                if (e.key === 'ArrowUp') tetrisRotate();
-                else if (e.key === 'ArrowLeft') tetrisMove('left');
-                else if (e.key === 'ArrowRight') tetrisMove('right');
-                else if (e.key === 'ArrowDown') { tetrisDrop(); e.preventDefault(); } // Fast drop
-                else if (e.key === ' ') { tetrisDrop(); e.preventDefault(); }
-            } else if (document.getElementById('breakout-game').classList.contains('active')) {
-                if (e.key === ' ') { if (game && !game.launched) game.launched = true; e.preventDefault(); }
-            } else if (document.getElementById('pong-game').classList.contains('active')) {
-                if (e.key === ' ') { if (game && !game.started) game.started = true; e.preventDefault(); }
-            } else if (document.getElementById('dodge-game').classList.contains('active')) {
-                if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') dodgeMove('up');
-                else if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') dodgeMove('down');
-                else if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') dodgeMove('left');
-                else if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') dodgeMove('right');
-            }
-        });
-
-        document.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
-        });
-
-        window.addEventListener('blur', () => {
-            keys = {};
-        });
-
-        // Prevent scrolling on touch for canvases
-        document.querySelectorAll('canvas').forEach(c => {
-            c.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-        });
-
-        // Toggle info text
-        function toggleInfo() {
-            const info = document.getElementById("infoText");
-            if (info.style.display === "block") {
-                info.style.display = "none";
-            } else {
-                info.style.display = "block";
-            }
-        }
-
-        // Hide info if clicked away
-        document.addEventListener("click", (e) => {
-            const info = document.getElementById("infoText");
-            if (!e.target.classList.contains("info-btn") && info && !info.contains(e.target)) {
-                info.style.display = "none";
-            }
-        });
+// Hide info if clicked away
+document.addEventListener("click", (e) => {
+    const info = document.getElementById("infoText");
+    if (!e.target.classList.contains("info-btn") && info && !info.contains(e.target)) {
+        info.style.display = "none";
+    }
+});
 </script>
 </body>
 </html>
