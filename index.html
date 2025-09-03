@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>mini Games</title>
+<title>mini Arcade</title>
 <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -110,12 +110,12 @@
     transform: translate(-50%, -50%);
     background: rgba(255, 255, 255, 0.9);
     color: #000;  /* black text */
-    padding: 30px;
+    padding: 20px;
     border-radius: 15px;
     text-align: center;
     display: none;
     z-index: 1000;
-    max-width: 90vw;
+    max-width: 92vw;
     max-height: 90vh;
     overflow-y: auto;
 }
@@ -273,44 +273,6 @@
     justify-content: space-between;   /* Score left, D-pad center, Restart right */
     gap: 2px;                        /* Space between elements */
 }
-/* D-pad container */
-#dodge-touch-controls {
-        display: flex !important;
-        flex-direction: column;
-        align-items: center;
-}
-
-/* D-pad rows */
-#dodge-touch-controls .tc-row {
-    display: flex;
-    justify-content: center;
-    gap: 5px;                        /* Space between buttons */
-}
-#dodge-touch-controls .tc-row:first-child {
-    margin-bottom: 6px;  /* Adjust padding as needed */
-}
-
-/* Buttons */
-.tc-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background-color: rgba(255,255,255,0.5); /* Translucent white */
-    color: #000;
-    font-size: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    user-select: none;
-    touch-action: none;
-    cursor: pointer;
-}
-
-.tc-btn:active {
-    background-color: rgba(255,255,255,0.8);
-}
 
 @media (max-width: 768px) {
   
@@ -421,7 +383,7 @@
 </head>
 <body>
 <div class="container">
-<h1 class="logo">mini Games</h1>
+<h1 class="logo">mini Arcade</h1>
 <!-- Game Selector -->
 <div class="game-selector" id="selector">
 <div class="games-grid">
@@ -430,25 +392,25 @@
 <div class="game-title">Race Car</div>
 <div class="game-desc">Zip Through</div>
 </div>
+<div class="game-card" onclick="startGame('snake')">
+<div class="game-icon">🐍</div>
+<div class="game-title">Snake</div>
+<div class="game-desc">Eat and Grow</div>
+</div>
 <div class="game-card" onclick="startGame('dodge')">
 <div class="game-icon">⚡</div>
 <div class="game-title">Dodge</div>
 <div class="game-desc">Avoid Shapes</div>
-</div>
-<div class="game-card" onclick="startGame('breakout')">
-<div class="game-icon">🧱</div>
-<div class="game-title">Breakout</div>
-<div class="game-desc">Break Blocks</div>
 </div>
 <div class="game-card" onclick="startGame('pong')">
 <div class="game-icon">🏓</div>
 <div class="game-title">Pong</div>
 <div class="game-desc">Classic Paddle</div>
 </div>
-<div class="game-card" onclick="startGame('snake')">
-<div class="game-icon">🐍</div>
-<div class="game-title">Snake</div>
-<div class="game-desc">Eat and Grow</div>
+<div class="game-card" onclick="startGame('breakout')">
+<div class="game-icon">🧱</div>
+<div class="game-title">Breakout</div>
+<div class="game-desc">Break Blocks</div>
 </div>
 <div class="game-card" onclick="startGame('tetris')">
 <div class="game-icon">🧩</div>
@@ -528,19 +490,8 @@
 
   <canvas height="500" id="dodge-canvas" width="500"></canvas>
 
-  <!-- Controls row: Score | D-pad | Restart -->
 <div class="controls">
     <div class="score">Score: <span id="dodge-score">0</span></div>
-    <div id="dodge-touch-controls" class="touch-controls">
-        <div class="tc-row">
-            <button id="dodge-up" class="tc-btn" data-key="ArrowUp">▲</button>
-        </div>
-        <div class="tc-row">
-            <button id="dodge-left" class="tc-btn" data-key="ArrowLeft">◀</button>
-            <button id="dodge-down" class="tc-btn" data-key="ArrowDown">▼</button>
-            <button id="dodge-right" class="tc-btn" data-key="ArrowRight">▶</button>
-        </div>
-    </div>
     <button class="restart-btn" onclick="restartGame('dodge')">Restart</button>
 </div>
 </div>
@@ -623,14 +574,35 @@ document.addEventListener('keyup', e => {
 });
 
 
-
 function saveHighScore(gameType, score) {
-    if (score > highScores[gameType]) {
-        highScores[gameType] = score;
-        return true; // New high score
+    // If score is a number → normal high score check
+    if (typeof score === "number") {
+        if (score > (highScores[gameType] || 0)) {
+            highScores[gameType] = score;
+            return true;
+        }
+        return false;
     }
-    return false;
+
+    // If score is a string (like "5-2") → Pong format
+    if (typeof score === "string") {
+        const [p1, p2] = score.split('-').map(Number);
+        const [bestP1, bestP2] = highScores[gameType]
+            ? highScores[gameType].split('-').map(Number)
+            : [0, Infinity];
+
+        // Higher P1 wins, then lower P2 is better
+        if (p1 > bestP1 || (p1 === bestP1 && p2 < bestP2)) {
+            highScores[gameType] = score;
+            return true;
+        }
+        return false;
+    }
+
+    return false; // fallback
 }
+
+
 
 function showHighScores() {
     const content = `
@@ -639,7 +611,7 @@ function showHighScores() {
             <div>🐍 Snake: ${highScores.snake}</div>
             <div>🧩 Tetris: ${highScores.tetris}</div>
             <div>🧱 Breakout: ${highScores.breakout}</div>
-            <div>🏓 Pong: ${highScores.pong} wins</div>
+            <div>🏓 Pong: ${highScores.pong}</div>
             <div>🏎️ Race Car: ${highScores.racer}</div>
             <div>⚡ Dodge: ${highScores.dodge}</div>
         </div>
@@ -807,7 +779,7 @@ function restartGame(type) {
     }
     if (type === 'racer') {
         document.getElementById('racer-score').textContent = '0';
-        document.getElementById('racer-speed').textContent = '40';
+        document.getElementById('racer-speed').textContent = '60';
     }
     if (type === 'dodge') {
         document.getElementById('dodge-score').textContent = '0';
@@ -1268,8 +1240,8 @@ function breakoutLoop() {
             game.ball.dx = (hit - 0.5) * 12;
 
             //  increase speed after paddle hit
-            game.ball.dx *= 1.02;
-            game.ball.dy *= 1.02;
+            game.ball.dx *= 1.01;
+            game.ball.dy *= 1.01;
         }
         
         // block collisions
@@ -1286,8 +1258,8 @@ function breakoutLoop() {
                 document.getElementById('breakout-score').textContent = game.score;
 
                 // accelerate after block hit
-                game.ball.dx *= 1.02;
-                game.ball.dy *= 1.02;
+                game.ball.dx *= 1.01;
+                game.ball.dy *= 1.01;
 
                 // shrink paddle every 5 blocks
                 if (game.score % 80 === 0 && game.paddle.w > 30) {
@@ -1390,7 +1362,7 @@ function togglePongMode() {
                 running: true,
                 p1: { x: 20, y: canvas.height/2 - 50, w: 15, h: 100, speed: 0, targetY: canvas.height/2 - 50 },
                 p2: { x: canvas.width - 35, y: canvas.height/2 - 50, w: 15, h: 100, speed: 0, targetY: canvas.height/2 - 50 },
-                ball: { x: canvas.width/2, y: canvas.height/2, dx: 6, dy: 4.5, r: 10 },
+                ball: { x: canvas.width/2, y: canvas.height/2, dx: 9, dy: 6, r: 10 },
                 score1: 0, score2: 0, started: false
             };
             
@@ -1451,11 +1423,12 @@ function togglePongMode() {
                     document.getElementById('p2-score').textContent = game.score2;
                     resetBall();
                     if (game.score2 >= 5) { 
-                        const isNewRecord = saveHighScore('pong', Math.max(game.score1, game.score2));
-                        const title = isNewRecord ? '🎉 New High Score!' : (pongMode ? 'Player 2 Wins!' : 'AI Wins!');
-                        showGameOver(title, `Final: ${game.score1}-${game.score2}`); 
-                        return; 
-                    }
+    // Do NOT save high score if AI wins
+    const title = pongMode ? 'Player 2 Wins!' : 'AI Wins!';
+    showGameOver(title, `Final: ${game.score1}-${game.score2}`); 
+    return; 
+}
+
                 }
                 
                 if (game.ball.x > canvas.width) {
@@ -1463,16 +1436,22 @@ function togglePongMode() {
                     document.getElementById('p1-score').textContent = game.score1;
                     resetBall();
                     if (game.score1 >= 5) { 
-                        const isNewRecord = saveHighScore('pong', Math.max(game.score1, game.score2));
-                        const title = isNewRecord ? '🎉 New High Score!' : 'Player 1 Wins!';
-                        showGameOver(title, `Final: ${game.score1}-${game.score2}`); 
-                        return; 
-                    }
+    // Save score in "5-2" format
+    const scoreStr = `${game.score1}-${game.score2}`;
+
+    // Only save high score when Player 1 wins
+    const isNewRecord = saveHighScore('pong', scoreStr);
+
+    const title = isNewRecord ? '🎉 New High Score!' : 'Player 1 Wins!';
+    showGameOver(title, `Final: ${scoreStr}`); 
+    return; 
+}
+
                 }
                 
                 if (!pongMode) {
                     const aiTarget = game.ball.y - 50;
-                    game.p2.y += (aiTarget - game.p2.y) * 0.07;
+                    game.p2.y += (aiTarget - game.p2.y) * 0.08;
                     game.p2.y = Math.max(0, Math.min(canvas.height - game.p2.h, game.p2.y));
                 }
             }
@@ -1514,8 +1493,8 @@ function togglePongMode() {
             const canvas = document.getElementById('pong-canvas');
             game.ball.x = canvas.width/2;
             game.ball.y = canvas.height/2;
-            game.ball.dx = Math.random() > 0.5 ? 6 : -6;
-            game.ball.dy = (Math.random() - 0.5) * 9;
+            game.ball.dx = Math.random() > 0.5 ? 9 : -9;
+            game.ball.dy = (Math.random() - 0.5) * 12;
             game.started = false;
             setTimeout(() => { if (game) game.started = true; }, 1000);
         }
@@ -1571,7 +1550,7 @@ function togglePongMode() {
             };
             
             const speedElement = document.getElementById('racer-speed');
-            if (speedElement) speedElement.textContent = '40';
+            if (speedElement) speedElement.textContent = '60';
             animationFrameId = requestAnimationFrame(racerLoop);
         }
 
@@ -1690,7 +1669,7 @@ function togglePongMode() {
                     if (game.score % 100 === 0) {
                         game.speed += 1; 
                         const speedElement = document.getElementById('racer-speed');
-                        if (speedElement) speedElement.textContent = game.speed*10;
+                        if (speedElement) speedElement.textContent = (game.speed*10)+20;
                     }
                     const scoreElement = document.getElementById('racer-score');
                     if (scoreElement) scoreElement.textContent = game.score;
