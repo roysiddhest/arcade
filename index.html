@@ -807,7 +807,7 @@ function restartGame(type) {
     }
     if (type === 'racer') {
         document.getElementById('racer-score').textContent = '0';
-        document.getElementById('racer-speed').textContent = '60';
+        document.getElementById('racer-speed').textContent = '40';
     }
     if (type === 'dodge') {
         document.getElementById('dodge-score').textContent = '0';
@@ -1567,11 +1567,11 @@ function togglePongMode() {
                 type: 'racer',
                 running: true,
                 car: { x: 185, y: canvas.height - 100, w: 30, h: 50, lane: 1 },
-                enemies: [], score: 0, speed: 6, enemyTimer: 0, roadOffset: 0
+                enemies: [], score: 0, speed: 4, enemyTimer: 0, roadOffset: 0
             };
             
             const speedElement = document.getElementById('racer-speed');
-            if (speedElement) speedElement.textContent = '60';
+            if (speedElement) speedElement.textContent = '40';
             animationFrameId = requestAnimationFrame(racerLoop);
         }
 
