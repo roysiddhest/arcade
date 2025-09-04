@@ -23,17 +23,17 @@
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 20px;
+            padding: 12px;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            max-width: 98vw;
-            max-height: 98vh;
+            max-width: 99vw;
+            max-height: 99vh;
             overflow-y: auto;
         }
 
         .logo {
-            font-size: 30px;
-            font-weight: 700;
-            margin-bottom: 28px;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
             color: #fff;
         }
 
@@ -47,7 +47,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 14px;
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
@@ -68,7 +68,7 @@
         }
 
         .game-icon {
-            font-size: 40px;
+            font-size: 48px;
             margin-bottom: 10px;
         }
 
@@ -93,7 +93,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             flex-wrap: wrap;
             position: relative;
         }
@@ -156,8 +156,8 @@
             border-radius: 10px;
             background: #000;
             margin-bottom: 15px;
-            max-width: calc(100vw - 60px);
-            max-height: calc(100vh - 200px);
+            max-width: 94vw;
+            max-height: 94vw;
         }
 
         .controls {
@@ -165,10 +165,10 @@
             justify-content: space-between;
             align-items: center;
             background: rgba(255, 255, 255, 0.15);
-            padding: 10px 20px;
+            padding: 10px 10px;
             border-radius: 10px;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 12px;
         }
 
         .score {
@@ -266,13 +266,6 @@
             transform: scale(0.95);
             border-color: rgba(46, 204, 113, 0.8);
         }
-        /* Controls row: Score | D-pad | Restart */
-.dodge-controls-row {
-    display: flex;
-    align-items: center;             /* Vertically center all items */
-    justify-content: space-between;   /* Score left, D-pad center, Restart right */
-    gap: 2px;                        /* Space between elements */
-}
 
 @media (max-width: 768px) {
   
@@ -280,19 +273,23 @@
             .two-btn-controls { display: flex; }
             
             canvas {
-        max-width: calc(100vw - 5px);  /* Full width minus small padding */
-        max-height: calc(100vh - 10px); /* Full height minus controls area */
+        max-width: calc(100vw - 5px);
+        max-height: calc(100vh - 10px);
         width: auto;
         height: auto;
         touch-action: none;
     }
+    #racer-canvas {
+        width: 96vw;
+        height: 80vh;     /* Wide rectangle */
+    }
     .container {
-                padding: 12px;
+                padding: 8px;
                 max-width: 100vw;
                 max-height: 100vh;
             }
     .controls {
-        padding: 8px 10px;      /* Smaller padding */
+        padding: 8px 8px;      /* Smaller padding */
         margin-bottom: 6px;     /* Less margin */
         font-size: 12px;        /* Smaller text */
     }
@@ -310,12 +307,24 @@
         margin: 0;              /* Remove body margins */
     }
     #dodge-canvas {
-        width: 92vw;   /* 90% of viewport width */
+        width: 96vw; 
+        height: auto;  /* keep aspect ratio */
+    }
+    #snake-canvas {
+        width: 96vw; 
+        height: auto;  /* keep aspect ratio */
+    }
+    #pong-canvas {
+        width: 96vw; 
+        height: auto;  /* keep aspect ratio */
+    }
+    #breakout-canvas {
+        width: 96vw; 
         height: auto;  /* keep aspect ratio */
     }
             .high-scores {
-            max-width: 70vw;
-            width: 55vw;
+            max-width: 90vw;
+            width: 75vw;
     }
             .games-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -332,14 +341,10 @@
         margin-bottom: 14px;    /* Less space below logo */
     }
     #tetris-canvas {
-        width: calc(70vw - 10px);
-        height: calc(70vh - 50px);   /* Tall rectangle */
+        width: 56vw;
+        height: 99vw;   /* Tall rectangle */
     }
     
-    #racer-canvas {
-        width: calc(94vw - 25px);
-        height: calc(82vh - 35px);     /* Wide rectangle */
-    }
         }
     
 /* Global info & HS buttons */
@@ -383,9 +388,9 @@
 </head>
 <body>
 <div class="container">
-<h1 class="logo">mini Arcade</h1>
 <!-- Game Selector -->
 <div class="game-selector" id="selector">
+    <h1 class="logo">mini Arcade</h1>
 <div class="games-grid">
     <div class="game-card" onclick="startGame('racer')">
 <div class="game-icon">🏎️</div>
@@ -605,19 +610,28 @@ function saveHighScore(gameType, score) {
 
 
 function showHighScores() {
+    const hsWindow = document.getElementById('high-scores');
+
+    // if already visible → close it
+    if (hsWindow.style.display === 'block') {
+        hsWindow.style.display = 'none';
+        return;
+    }
+
+    // otherwise build content + open
     const content = `
         <div style="font-size: 12px; opacity: 0.7; margin: 5px 0 15px 0;">(resets after refresh)</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-            <div>🐍 Snake: ${highScores.snake}</div>
-            <div>🧩 Tetris: ${highScores.tetris}</div>
-            <div>🧱 Breakout: ${highScores.breakout}</div>
-            <div>🏓 Pong: ${highScores.pong}</div>
             <div>🏎️ Race Car: ${highScores.racer}</div>
+            <div>🐍 Snake: ${highScores.snake}</div>
             <div>⚡ Dodge: ${highScores.dodge}</div>
+            <div>🏓 Pong: ${highScores.pong}</div>
+            <div>🧱 Breakout: ${highScores.breakout}</div>
+            <div>🧩 Tetris: ${highScores.tetris}</div> 
         </div>
     `;
     document.getElementById('high-scores-content').innerHTML = content;
-    document.getElementById('high-scores').style.display = 'block';
+    hsWindow.style.display = 'block';
 }
 
 function hideHighScores() {
@@ -802,10 +816,11 @@ function hideGameOver() {
     document.getElementById('game-over').style.display = 'none';
 }
 
-        // Snake Game - Modified for smoother movement and color changes
-        function initSnake() {
-            const canvas = document.getElementById('snake-canvas');
-            
+    function initSnake() {
+    const canvas = document.getElementById('snake-canvas');
+    canvas.width = 20 * 20;
+    canvas.height = 20 * 20;
+
             game = {
                 type: 'snake',
                 running: true,
@@ -823,15 +838,20 @@ function hideGameOver() {
         }
 
         function generateFood() {
-            game.food = {
-                x: Math.floor(Math.random() * 25),
-                y: Math.floor(Math.random() * 25)
-            };
-        }
+    let newFood;
+    do {
+        newFood = {
+            x: Math.floor(Math.random() * 20),
+            y: Math.floor(Math.random() * 20)
+        };
+    } while (game.snake.some(s => s.x === newFood.x && s.y === newFood.y));
+    game.food = newFood;
+}
+
 
         function snakeLoop(currentTime) {
             if (!game || !game.running) return;
-            
+            const snakeCanvas = document.getElementById('snake-canvas');
             const canvas = document.getElementById('snake-canvas');
             const ctx = canvas.getContext('2d');
             
@@ -846,7 +866,7 @@ function hideGameOver() {
                         y: game.snake[0].y + game.dy
                     };
 
-                    if (head.x < 0 || head.x >= 25 || head.y < 0 || head.y >= 25 ||
+                    if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 ||
                         game.snake.some(s => s.x === head.x && s.y === head.y)) {
                         const isNewRecord = saveHighScore('snake', game.score);
                         const title = isNewRecord ? '🎉 New High Score!' : 'Game Over!';
@@ -868,13 +888,13 @@ function hideGameOver() {
                 // Blue snake body
                 ctx.fillStyle = '#0074D9';
                 game.snake.forEach(s => {
-                    ctx.fillRect(s.x * 20, s.y * 20, 18, 18);
+                    ctx.fillRect(s.x * 20, s.y * 20, 19, 19);
                 });
 
                 // Green food dot
                 ctx.fillStyle = '#2ECC40';
                 ctx.beginPath();
-                ctx.arc(game.food.x * 20 + 10, game.food.y * 20 + 10, 11, 0, 2 * Math.PI);
+                ctx.arc(game.food.x * 20 + 10, game.food.y * 20 + 10, 10, 0, 2 * Math.PI);
                 ctx.fill();
 
                 game.lastTime = currentTime;
@@ -1157,7 +1177,7 @@ function initBreakout() {
         ball: { 
             x: canvas.width/2, 
             y: canvas.height - 50, 
-            dx: 10, dy: -10, 
+            dx: 8, dy: -8, 
             r: 10 
         },
         blocks: [], 
@@ -1227,8 +1247,8 @@ function breakoutLoop() {
             }
             game.ball.x = canvas.width/2;
             game.ball.y = canvas.height - 50;
-            game.ball.dx = 10;
-            game.ball.dy = -10;
+            game.ball.dx = 8;
+            game.ball.dy = -8;
             game.launched = false;
         }
         
@@ -1257,14 +1277,6 @@ function breakoutLoop() {
                 game.score += 10;
                 document.getElementById('breakout-score').textContent = game.score;
 
-                // accelerate after block hit
-                game.ball.dx *= 1.01;
-                game.ball.dy *= 1.01;
-
-                // shrink paddle every 5 blocks
-                if (game.score % 80 === 0 && game.paddle.w > 30) {
-                    game.paddle.w -= 5;
-                }
 
                 if (game.blocks.every(b => !b.alive)) {
                     const isNewRecord = saveHighScore('breakout', game.score);
@@ -1289,7 +1301,7 @@ function breakoutLoop() {
     });
     
     // draw paddle
-    ctx.fillStyle = '#ff6b6b';
+    ctx.fillStyle = '#e32222';
     ctx.fillRect(game.paddle.x, game.paddle.y, game.paddle.w, game.paddle.h);
     
     // draw ball
