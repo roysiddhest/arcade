@@ -242,8 +242,8 @@
             touch-action: manipulation;
         }
         #racer-canvas {
-        width: calc(40vw - 35px);
-        height: calc(76vh - 35px);     /* Wide rectangle */
+        width: auto;
+        height: 84vh;     /* Wide rectangle */
     }
 
         .wide-btn {
@@ -533,11 +533,17 @@ let highScores = {
     pong: 0, racer: 0, dodge: 0
 };
 
-// Single set of keyboard event listeners for all games
-// ✅ Unified keyboard handler for all games
 document.addEventListener('keydown', e => {
     // Prevent double-move when key is held
     if (e.repeat) return;
+
+    // Check if game over screen is visible and spacebar is pressed
+    const gameOverScreen = document.getElementById('game-over');
+    if (gameOverScreen && gameOverScreen.style.display === 'block' && e.code === 'Space') {
+        e.preventDefault();
+        restartGame(gameType);
+        return;
+    }
 
     // Snake controls
     if (gameType === 'snake' && game && game.running) {
@@ -718,6 +724,10 @@ function stopGameLoop() {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
     }
+    // Stop all potential running games
+    if (game) {
+        game.running = false;
+    }
 }
 
 function resetKeys() {
@@ -730,9 +740,9 @@ function resetKeys() {
 }
 
 function backToMenu() {
-    // Stop game
-    if (game) game.running = false;
+    // Critical: Stop everything first
     stopGameLoop();
+    if (game) game.running = false;
     game = null;
     gameType = null;
 
@@ -750,27 +760,22 @@ function backToMenu() {
     document.querySelectorAll('.game-screen').forEach(screen => screen.classList.remove('active'));
     document.getElementById('selector').classList.remove('hidden');
 
-    // Reset input and Dodge movement
+    // Critical: Properly reset input state
     keys = {};
     if (gameType === 'dodge') {
-        if (game) {
-            game.dodgeMoveX = 0;
-            game.dodgeMoveY = 0;
-        }
         showDodgeControls(false);
     }
 
     hideGameOver();
 }
-
 function restartGame(type) {
-    // Stop current game
-    if (game) game.running = false;
+    // Critical: Complete cleanup before restart
     stopGameLoop();
+    if (game) game.running = false;
     game = null;
 
-    // Reset keys
-    resetKeys();
+    // Reset all key states
+    keys = {};
 
     // Reset scores per game
     if (type === 'snake') document.getElementById('snake-score').textContent = '0';
@@ -779,10 +784,12 @@ function restartGame(type) {
         document.getElementById('breakout-score').textContent = '0';
         hideGameOver();
 
-        // Clear canvas
+        // Clear canvas with null check
         const canvas = document.getElementById('breakout-canvas');
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
 
         setTimeout(() => initBreakout(), 100);
         return;
@@ -797,13 +804,13 @@ function restartGame(type) {
     }
     if (type === 'dodge') {
         document.getElementById('dodge-score').textContent = '0';
-        // Keep touch controls visible for dodge game
         showDodgeControls(true);
         setupDodgeTouchControls();
     }
 
     hideGameOver();
-    setTimeout(() => startGame(type), 50);
+    // Critical: Ensure clean restart
+    setTimeout(() => startGame(type), 100);
 }
 
 function showGameOver(title, score) {
@@ -948,23 +955,27 @@ function hideGameOver() {
         const HEIGHT = ROWS * CELL;
 
         function initTetris() {
-            const canvas = document.getElementById('tetris-canvas');
-            if (!canvas) return;
-            canvas.width = WIDTH;
-            canvas.height = HEIGHT;
+    const canvas = document.getElementById('tetris-canvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return; // Critical: Prevent errors if context fails
+    
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
 
-            game = {
-                type: 'tetris',
-                running: true,
-                grid: Array.from({ length: ROWS }, () => Array(COLS).fill(null)),
-                drop: 0,
-                interval: 500,
-                last: 0,
-                score: 0
-            };
-            newPiece();
-            animationFrameId = requestAnimationFrame(tetrisLoop);
-        }
+    game = {
+        type: 'tetris',
+        running: true,
+        grid: Array.from({ length: ROWS }, () => Array(COLS).fill(null)),
+        drop: 0,
+        interval: 500,
+        last: 0,
+        score: 0
+    };
+    newPiece();
+    animationFrameId = requestAnimationFrame(tetrisLoop);
+}
 
         const TETROMINOS = {
             I: [[1, 1, 1, 1]],
@@ -1015,37 +1026,39 @@ function hideGameOver() {
             animationFrameId = requestAnimationFrame(tetrisLoop);
         }
 
-        function drawTetris() {
-            if (!game) return;
-            const canvas = document.getElementById('tetris-canvas');
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, WIDTH, HEIGHT);
+       function drawTetris() {
+    if (!game) return;
+    const canvas = document.getElementById('tetris-canvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return; // Critical: Prevent null context errors
+    
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-            // Draw grid
-            for (let y = 0; y < ROWS; y++) {
-                for (let x = 0; x < COLS; x++) {
-                    if (game.grid[y][x]) {
-                        ctx.fillStyle = game.grid[y][x];
-                        ctx.fillRect(x * CELL, y * CELL, CELL - 1, CELL - 1);
-                    }
-                }
+    // Draw grid
+    for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+            if (game.grid[y][x]) {
+                ctx.fillStyle = game.grid[y][x];
+                ctx.fillRect(x * CELL, y * CELL, CELL - 1, CELL - 1);
             }
+        }
+    }
 
-            // Draw current piece
-            if (game.piece && game.color) {
-                ctx.fillStyle = game.color;
-                for (let y = 0; y < game.piece.length; y++) {
-                    for (let x = 0; x < game.piece[y].length; x++) {
-                        if (game.piece[y][x]) {
-                            ctx.fillRect((game.x + x) * CELL, (game.y + y) * CELL, CELL - 1, CELL - 1);
-                        }
-                    }
+    // Draw current piece
+    if (game.piece && game.color) {
+        ctx.fillStyle = game.color;
+        for (let y = 0; y < game.piece.length; y++) {
+            for (let x = 0; x < game.piece[y].length; x++) {
+                if (game.piece[y][x]) {
+                    ctx.fillRect((game.x + x) * CELL, (game.y + y) * CELL, CELL - 1, CELL - 1);
                 }
             }
         }
+    }
+}
 
         function tetrisRotate() {
             if (!game || !game.running || !game.piece) return;
@@ -1115,19 +1128,21 @@ function hideGameOver() {
         }
 
         function collision(offX = 0, offY = 0, piece = game?.piece) {
-            if (!game || !piece) return true;
+    if (!game || !piece || !game.grid) return true; // Critical: Check grid exists
+    
+    for (let y = 0; y < piece.length; y++) {
+        for (let x = 0; x < piece[y].length; x++) {
+            if (!piece[y][x]) continue;
+            const nx = game.x + x + offX;
+            const ny = game.y + y + offY;
             
-            for (let y = 0; y < piece.length; y++) {
-                for (let x = 0; x < piece[y].length; x++) {
-                    if (!piece[y][x]) continue;
-                    const nx = game.x + x + offX;
-                    const ny = game.y + y + offY;
-                    if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
-                    if (ny >= 0 && game.grid[ny] && game.grid[ny][nx]) return true;
-                }
-            }
-            return false;
+            // Critical: More thorough boundary checks
+            if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
+            if (ny >= 0 && game.grid[ny] && game.grid[ny][nx]) return true;
         }
+    }
+    return false;
+}
 
         // Tetris touch controls
         let tetrisStartX = null, tetrisStartY = null;
@@ -1186,7 +1201,7 @@ function initBreakout() {
         launched: false
     };
     
-    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#a55eea'];
+    const colors = ['#e74c3c', '#8e44ad', '#f1c40f', '#27ae60', '#3498db'];
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 15; col++) {
             game.blocks.push({
@@ -1211,21 +1226,20 @@ function breakoutLoop() {
     if (!game || !game.running || gameType !== 'breakout') return;
     
     const canvas = document.getElementById('breakout-canvas');
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
-    const easing = 0.3;
-    game.paddle.x += (game.paddle.targetX - game.paddle.x) * easing;
     
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    let speed = 0;
-    if (keys['ArrowLeft'] || keys['a']) speed = -8;
-    if (keys['ArrowRight'] || keys['d']) speed = 8;
+    // Direct paddle movement with keyboard
+    let paddleSpeed = 0;
+    if (keys['ArrowLeft'] || keys['a'] || keys['A']) paddleSpeed = -10;
+    if (keys['ArrowRight'] || keys['d'] || keys['D']) paddleSpeed = 10;
     
-    game.paddle.speed += (speed - game.paddle.speed) * 0.2;
-    game.paddle.x += game.paddle.speed;
+    game.paddle.x += paddleSpeed;
     game.paddle.x = Math.max(0, Math.min(canvas.width - game.paddle.w, game.paddle.x));
     
     if (game.launched) {
@@ -1259,14 +1273,14 @@ function breakoutLoop() {
             const hit = (game.ball.x - game.paddle.x) / game.paddle.w;
             game.ball.dx = (hit - 0.5) * 12;
 
-            //  increase speed after paddle hit
             game.ball.dx *= 1.01;
             game.ball.dy *= 1.01;
         }
         
-        // block collisions
+        // block collisions - only hit one block per frame
+        let blockHit = false;
         for (let block of game.blocks) {
-            if (block.alive && 
+            if (!blockHit && block.alive && 
                 game.ball.x + game.ball.r >= block.x && 
                 game.ball.x - game.ball.r <= block.x + block.w &&
                 game.ball.y + game.ball.r >= block.y && 
@@ -1276,7 +1290,7 @@ function breakoutLoop() {
                 game.ball.dy = -game.ball.dy;
                 game.score += 10;
                 document.getElementById('breakout-score').textContent = game.score;
-
+                blockHit = true;
 
                 if (game.blocks.every(b => !b.alive)) {
                     const isNewRecord = saveHighScore('breakout', game.score);
@@ -1284,7 +1298,6 @@ function breakoutLoop() {
                     showGameOver(title, `Score: ${game.score}`);
                     return;
                 }
-                break;
             }
         }
     } else {
@@ -1341,7 +1354,7 @@ document.getElementById('breakout-canvas').addEventListener('touchstart', (e) =>
 
         // Pong Game - Fixed
        let pongMode = false; // false = 1P mode by default
-
+        
 function togglePongMode() {
     pongMode = !pongMode;
 
@@ -1382,123 +1395,110 @@ function togglePongMode() {
         }
 
         function pongLoop() {
-            if (!game || !game.running || gameType !== 'pong') return;
-            
-            const canvas = document.getElementById('pong-canvas');
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.setLineDash([10, 10]);
-            ctx.beginPath();
-            ctx.moveTo(canvas.width/2, 0);
-            ctx.lineTo(canvas.width/2, canvas.height);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            
-            const easing = 0.3;
-            game.p1.y += (game.p1.targetY - game.p1.y) * easing;
-            if (pongMode) {
-                game.p2.y += (game.p2.targetY - game.p2.y) * easing;
-            }
-            
-            if (game.started) {
-                game.ball.x += game.ball.dx;
-                game.ball.y += game.ball.dy;
-                
-                if (game.ball.y - game.ball.r <= 0) {
-                    game.ball.y = game.ball.r;
-                    game.ball.dy = Math.abs(game.ball.dy);
-                }
-                if (game.ball.y + game.ball.r >= canvas.height) {
-                    game.ball.y = canvas.height - game.ball.r;
-                    game.ball.dy = -Math.abs(game.ball.dy);
-                }
-                
-                if (game.ball.x - game.ball.r <= game.p1.x + game.p1.w && 
-                    game.ball.y >= game.p1.y && game.ball.y <= game.p1.y + game.p1.h) {
-                    game.ball.dx = Math.abs(game.ball.dx);
-                    game.ball.dy = (game.ball.y - game.p1.y - 50) * 0.08;
-                }
-                
-                if (game.ball.x + game.ball.r >= game.p2.x && 
-                    game.ball.y >= game.p2.y && game.ball.y <= game.p2.y + game.p2.h) {
-                    game.ball.dx = -Math.abs(game.ball.dx);
-                    game.ball.dy = (game.ball.y - game.p2.y - 50) * 0.08;
-                }
-                
-                if (game.ball.x < 0) {
-                    game.score2++;
-                    document.getElementById('p2-score').textContent = game.score2;
-                    resetBall();
-                    if (game.score2 >= 5) { 
-    // Do NOT save high score if AI wins
-    const title = pongMode ? 'Player 2 Wins!' : 'AI Wins!';
-    showGameOver(title, `Final: ${game.score1}-${game.score2}`); 
-    return; 
-}
-
-                }
-                
-                if (game.ball.x > canvas.width) {
-                    game.score1++;
-                    document.getElementById('p1-score').textContent = game.score1;
-                    resetBall();
-                    if (game.score1 >= 5) { 
-    // Save score in "5-2" format
-    const scoreStr = `${game.score1}-${game.score2}`;
-
-    // Only save high score when Player 1 wins
-    const isNewRecord = saveHighScore('pong', scoreStr);
-
-    const title = isNewRecord ? '🎉 New High Score!' : 'Player 1 Wins!';
-    showGameOver(title, `Final: ${scoreStr}`); 
-    return; 
-}
-
-                }
-                
-                if (!pongMode) {
-                    const aiTarget = game.ball.y - 50;
-                    game.p2.y += (aiTarget - game.p2.y) * 0.08;
-                    game.p2.y = Math.max(0, Math.min(canvas.height - game.p2.h, game.p2.y));
-                }
-            }
-            
-            let p1Speed = 0;
-            if (keys['w'] || keys['W'] || (!pongMode && keys['ArrowUp'])) p1Speed = -8;
-            if (keys['s'] || keys['S'] || (!pongMode && keys['ArrowDown'])) p1Speed = 8;
-            
-            game.p1.speed += (p1Speed - game.p1.speed) * 0.3;
-            game.p1.y += game.p1.speed;
-            game.p1.y = Math.max(0, Math.min(canvas.height - game.p1.h, game.p1.y));
-            
-            if (pongMode) {
-                let p2Speed = 0;
-                if (keys['ArrowUp']) p2Speed = -8;
-                if (keys['ArrowDown']) p2Speed = 8;
-                
-                game.p2.speed += (p2Speed - game.p2.speed) * 0.3;
-                game.p2.y += game.p2.speed;
-                game.p2.y = Math.max(0, Math.min(canvas.height - game.p2.h, game.p2.y));
-            }
-            
-            ctx.fillStyle = '#4ecdc4';
-            ctx.fillRect(game.p1.x, game.p1.y, game.p1.w, game.p1.h);
-            
-            ctx.fillStyle = '#ff6b6b';
-            ctx.fillRect(game.p2.x, game.p2.y, game.p2.w, game.p2.h);
-            
-            ctx.fillStyle = '#ffd93d';
-            ctx.beginPath();
-            ctx.arc(game.ball.x, game.ball.y, game.ball.r, 0, Math.PI * 2);
-            ctx.fill();
-            
-            animationFrameId = requestAnimationFrame(pongLoop);
+    if (!game || !game.running || gameType !== 'pong') return;
+    
+    const canvas = document.getElementById('pong-canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.setLineDash([10, 10]);
+    ctx.beginPath();
+    ctx.moveTo(canvas.width/2, 0);
+    ctx.lineTo(canvas.width/2, canvas.height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    if (game.started) {
+        game.ball.x += game.ball.dx;
+        game.ball.y += game.ball.dy;
+        
+        if (game.ball.y - game.ball.r <= 0) {
+            game.ball.y = game.ball.r;
+            game.ball.dy = Math.abs(game.ball.dy);
         }
+        if (game.ball.y + game.ball.r >= canvas.height) {
+            game.ball.y = canvas.height - game.ball.r;
+            game.ball.dy = -Math.abs(game.ball.dy);
+        }
+        
+        if (game.ball.x - game.ball.r <= game.p1.x + game.p1.w && 
+            game.ball.y >= game.p1.y && game.ball.y <= game.p1.y + game.p1.h) {
+            game.ball.dx = Math.abs(game.ball.dx);
+            game.ball.dy = (game.ball.y - game.p1.y - 50) * 0.08;
+        }
+        
+        if (game.ball.x + game.ball.r >= game.p2.x && 
+            game.ball.y >= game.p2.y && game.ball.y <= game.p2.y + game.p2.h) {
+            game.ball.dx = -Math.abs(game.ball.dx);
+            game.ball.dy = (game.ball.y - game.p2.y - 50) * 0.08;
+        }
+        
+        if (game.ball.x < 0) {
+            game.score2++;
+            document.getElementById('p2-score').textContent = game.score2;
+            resetBall();
+            if (game.score2 >= 5) { 
+                const title = pongMode ? 'Player 2 Wins!' : 'AI Wins!';
+                showGameOver(title, `Final: ${game.score1}-${game.score2}`); 
+                return; 
+            }
+        }
+        
+        if (game.ball.x > canvas.width) {
+            game.score1++;
+            document.getElementById('p1-score').textContent = game.score1;
+            resetBall();
+            if (game.score1 >= 5) { 
+                const scoreStr = `${game.score1}-${game.score2}`;
+                const isNewRecord = saveHighScore('pong', scoreStr);
+                const title = isNewRecord ? '🎉 New High Score!' : 'Player 1 Wins!';
+                showGameOver(title, `Final: ${scoreStr}`); 
+                return; 
+            }
+        }
+        
+        if (!pongMode) {
+            const aiTarget = game.ball.y - 50;
+            game.p2.y += (aiTarget - game.p2.y) * 0.08;
+            game.p2.y = Math.max(0, Math.min(canvas.height - game.p2.h, game.p2.y));
+        }
+    }
+    
+    // Direct P1 paddle movement with keyboard
+    let p1Speed = 0;
+    if (keys['w'] || keys['W'] || (!pongMode && keys['ArrowUp'])) p1Speed = -8;
+    if (keys['s'] || keys['S'] || (!pongMode && keys['ArrowDown'])) p1Speed = 8;
+    
+    game.p1.y += p1Speed;
+    game.p1.y = Math.max(0, Math.min(canvas.height - game.p1.h, game.p1.y));
+    
+    if (pongMode) {
+        // Direct P2 paddle movement with arrow keys in 2P mode
+        let p2Speed = 0;
+        if (keys['ArrowUp']) p2Speed = -8;
+        if (keys['ArrowDown']) p2Speed = 8;
+        
+        game.p2.y += p2Speed;
+        game.p2.y = Math.max(0, Math.min(canvas.height - game.p2.h, game.p2.y));
+    }
+    
+    ctx.fillStyle = '#4ecdc4';
+    ctx.fillRect(game.p1.x, game.p1.y, game.p1.w, game.p1.h);
+    
+    ctx.fillStyle = '#ff6b6b';
+    ctx.fillRect(game.p2.x, game.p2.y, game.p2.w, game.p2.h);
+    
+    ctx.fillStyle = '#ffd93d';
+    ctx.beginPath();
+    ctx.arc(game.ball.x, game.ball.y, game.ball.r, 0, Math.PI * 2);
+    ctx.fill();
+    
+    animationFrameId = requestAnimationFrame(pongLoop);
+}
 
         function resetBall() {
             if (!game) return;
@@ -1853,15 +1853,6 @@ function dodgeLoop() {
     animationFrameId = requestAnimationFrame(dodgeLoop);
 }
 
-// Keyboard / button impulse movement
-function dodgeMove(dir) {
-    if (!game || !game.running) return;
-    const thrust = 8;
-    if (dir === 'left') game.player.vx -= thrust;
-    else if (dir === 'right') game.player.vx += thrust;
-    else if (dir === 'up') game.player.vy -= thrust;
-    else if (dir === 'down') game.player.vy += thrust;
-}
 
 // Touch swipe
 let dodgeTouchStartX = null, dodgeTouchStartY = null, dodgeTouchStartTime = null;
