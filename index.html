@@ -1185,9 +1185,8 @@ function initBreakout() {
         paddle: { 
             x: canvas.width/2 - 60, 
             y: canvas.height - 30, 
-            w: 120, h: 15, 
-            speed: 0, 
-            targetX: canvas.width/2 - 60 
+            w: 120, h: 15,
+            targetX: canvas.width/2 - 60  // Keep for touch controls
         },
         ball: { 
             x: canvas.width/2, 
@@ -1214,14 +1213,15 @@ function initBreakout() {
         }
     }
     
-    // ✅ desktop launch support
     canvas.addEventListener('click', () => {
         if (game && !game.launched) game.launched = true;
     });
 
     animationFrameId = requestAnimationFrame(breakoutLoop);
 }
+    
 
+// Fix Breakout - restore easing for touch, keep direct keyboard movement
 function breakoutLoop() {
     if (!game || !game.running || gameType !== 'breakout') return;
     
@@ -1234,23 +1234,23 @@ function breakoutLoop() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Direct paddle movement with keyboard
-    let paddleSpeed = 0;
-    if (keys['ArrowLeft'] || keys['a'] || keys['A']) paddleSpeed = -10;
-    if (keys['ArrowRight'] || keys['d'] || keys['D']) paddleSpeed = 10;
+    // Direct keyboard movement only
+    if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+        game.paddle.x -= 8;
+    }
+    if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+        game.paddle.x += 8;
+    }
     
-    game.paddle.x += paddleSpeed;
     game.paddle.x = Math.max(0, Math.min(canvas.width - game.paddle.w, game.paddle.x));
     
     if (game.launched) {
         game.ball.x += game.ball.dx;
         game.ball.y += game.ball.dy;
         
-        // walls
         if (game.ball.x <= game.ball.r || game.ball.x >= canvas.width - game.ball.r) game.ball.dx = -game.ball.dx;
         if (game.ball.y <= game.ball.r) game.ball.dy = -game.ball.dy;
         
-        // missed ball
         if (game.ball.y >= canvas.height) {
             game.lives--;
             if (game.lives <= 0) {
@@ -1266,18 +1266,15 @@ function breakoutLoop() {
             game.launched = false;
         }
         
-        // paddle collision
         if (game.ball.y + game.ball.r >= game.paddle.y &&
             game.ball.x >= game.paddle.x && game.ball.x <= game.paddle.x + game.paddle.w) {
             game.ball.dy = -Math.abs(game.ball.dy);
             const hit = (game.ball.x - game.paddle.x) / game.paddle.w;
             game.ball.dx = (hit - 0.5) * 12;
-
             game.ball.dx *= 1.01;
             game.ball.dy *= 1.01;
         }
         
-        // block collisions - only hit one block per frame
         let blockHit = false;
         for (let block of game.blocks) {
             if (!blockHit && block.alive && 
@@ -1305,7 +1302,6 @@ function breakoutLoop() {
         game.ball.y = game.paddle.y - game.ball.r;
     }
     
-    // draw blocks
     game.blocks.forEach(b => {
         if (b.alive) {
             ctx.fillStyle = b.color;
@@ -1313,11 +1309,9 @@ function breakoutLoop() {
         }
     });
     
-    // draw paddle
     ctx.fillStyle = '#e32222';
     ctx.fillRect(game.paddle.x, game.paddle.y, game.paddle.w, game.paddle.h);
     
-    // draw ball
     ctx.fillStyle = '#ffd93d';
     ctx.beginPath();
     ctx.arc(game.ball.x, game.ball.y, game.ball.r, 0, Math.PI * 2);
@@ -1326,7 +1320,7 @@ function breakoutLoop() {
     animationFrameId = requestAnimationFrame(breakoutLoop);
 }
 
-// Breakout touch controls
+
 document.getElementById('breakout-canvas').addEventListener('touchmove', e => {
     e.preventDefault();
     if (!game) return;
@@ -1334,8 +1328,8 @@ document.getElementById('breakout-canvas').addEventListener('touchmove', e => {
     let x = e.touches[0].clientX - rect.left;
     let canvasX = x * (e.target.width / rect.width);
     
-    game.paddle.targetX = canvasX - game.paddle.w / 2;
-    game.paddle.targetX = Math.max(0, Math.min(e.target.width - game.paddle.w, game.paddle.targetX));
+    game.paddle.x = canvasX - game.paddle.w / 2;
+    game.paddle.x = Math.max(0, Math.min(e.target.width - game.paddle.w, game.paddle.x));
 });
 
 document.addEventListener('keydown', e => {
@@ -1378,23 +1372,33 @@ function togglePongMode() {
 }
 
 
-        function initPong() {
-            const canvas = document.getElementById('pong-canvas');
-            if (!canvas) return;
-            
-            game = {
-                type: 'pong',
-                running: true,
-                p1: { x: 20, y: canvas.height/2 - 50, w: 15, h: 100, speed: 0, targetY: canvas.height/2 - 50 },
-                p2: { x: canvas.width - 35, y: canvas.height/2 - 50, w: 15, h: 100, speed: 0, targetY: canvas.height/2 - 50 },
-                ball: { x: canvas.width/2, y: canvas.height/2, dx: 9, dy: 6, r: 10 },
-                score1: 0, score2: 0, started: false
-            };
-            
-            animationFrameId = requestAnimationFrame(pongLoop);
-        }
+    function initPong() {
+    const canvas = document.getElementById('pong-canvas');
+    if (!canvas) return;
+    
+    game = {
+        type: 'pong',
+        running: true,
+        p1: { 
+            x: 20, 
+            y: canvas.height/2 - 50, 
+            w: 15, h: 100,
+            targetY: canvas.height/2 - 50  // Keep for touch controls
+        },
+        p2: { 
+            x: canvas.width - 35, 
+            y: canvas.height/2 - 50, 
+            w: 15, h: 100,
+            targetY: canvas.height/2 - 50  // Keep for touch controls
+        },
+        ball: { x: canvas.width/2, y: canvas.height/2, dx: 9, dy: 6, r: 10 },
+        score1: 0, score2: 0, started: false
+    };
+    
+    animationFrameId = requestAnimationFrame(pongLoop);
+}
 
-        function pongLoop() {
+   function pongLoop() {
     if (!game || !game.running || gameType !== 'pong') return;
     
     const canvas = document.getElementById('pong-canvas');
@@ -1468,21 +1472,23 @@ function togglePongMode() {
         }
     }
     
-    // Direct P1 paddle movement with keyboard
-    let p1Speed = 0;
-    if (keys['w'] || keys['W'] || (!pongMode && keys['ArrowUp'])) p1Speed = -8;
-    if (keys['s'] || keys['S'] || (!pongMode && keys['ArrowDown'])) p1Speed = 8;
-    
-    game.p1.y += p1Speed;
+    // Direct P1 movement
+    if (keys['w'] || keys['W'] || (!pongMode && keys['ArrowUp'])) {
+        game.p1.y -= 8;
+    }
+    if (keys['s'] || keys['S'] || (!pongMode && keys['ArrowDown'])) {
+        game.p1.y += 8;
+    }
     game.p1.y = Math.max(0, Math.min(canvas.height - game.p1.h, game.p1.y));
     
     if (pongMode) {
-        // Direct P2 paddle movement with arrow keys in 2P mode
-        let p2Speed = 0;
-        if (keys['ArrowUp']) p2Speed = -8;
-        if (keys['ArrowDown']) p2Speed = 8;
-        
-        game.p2.y += p2Speed;
+        // Direct P2 movement in 2P mode
+        if (keys['ArrowUp']) {
+            game.p2.y -= 8;
+        }
+        if (keys['ArrowDown']) {
+            game.p2.y += 8;
+        }
         game.p2.y = Math.max(0, Math.min(canvas.height - game.p2.h, game.p2.y));
     }
     
@@ -1511,8 +1517,7 @@ function togglePongMode() {
             setTimeout(() => { if (game) game.started = true; }, 1000);
         }
 
-        // Pong touch controls
-        document.getElementById('pong-canvas').addEventListener('touchmove', e => {
+    document.getElementById('pong-canvas').addEventListener('touchmove', e => {
     e.preventDefault();
     if (!game) return;
     let rect = e.target.getBoundingClientRect();
@@ -1525,12 +1530,12 @@ function togglePongMode() {
 
         if (x < rect.width / 2) {
             // Left half → P1
-            game.p1.targetY = canvasY - game.p1.h / 2;
-            game.p1.targetY = Math.max(0, Math.min(e.target.height - game.p1.h, game.p1.targetY));
+            game.p1.y = canvasY - game.p1.h / 2;
+            game.p1.y = Math.max(0, Math.min(e.target.height - game.p1.h, game.p1.y));
         } else if (pongMode) {
             // Right half → P2 (only in 2P mode)
-            game.p2.targetY = canvasY - game.p2.h / 2;
-            game.p2.targetY = Math.max(0, Math.min(e.target.height - game.p2.h, game.p2.targetY));
+            game.p2.y = canvasY - game.p2.h / 2;
+            game.p2.y = Math.max(0, Math.min(e.target.height - game.p2.h, game.p2.y));
         }
     }
 });
